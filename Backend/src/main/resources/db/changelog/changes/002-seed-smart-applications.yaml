@@ -1,0 +1,36 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-seed-smart-applications
+      author: milan
+      changes:
+        - insert:
+            tableName: smart_application
+            columns:
+              - column: { name: id, value: app-minesweeper }
+              - column: { name: name, value: Minesweeper }
+              - column: { name: type, value: GAME }
+              - column: { name: launch_message, value: Aknakereső alkalmazás elindult. }
+
+        - insert:
+            tableName: smart_application
+            columns:
+              - column: { name: id, value: app-openmap }
+              - column: { name: name, value: OpenMap }
+              - column: { name: type, value: NAVIGATION }
+              - column: { name: launch_message, value: OpenMap alkalmazás elindult. }
+
+        - insert:
+            tableName: smart_application
+            columns:
+              - column: { name: id, value: app-paint }
+              - column: { name: name, value: Paint }
+              - column: { name: type, value: PRODUCTIVITY }
+              - column: { name: launch_message, value: Paint alkalmazás elindult. }
+
+        - insert:
+            tableName: smart_application
+            columns:
+              - column: { name: id, value: app-contacts }
+              - column: { name: name, value: Contacts }
+              - column: { name: type, value: UTILITY }
+              - column: { name: launch_message, value: Címtár alkalmazás elindult. }

@@ -1,0 +1,230 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-wallpaper
+      author: milan
+      changes:
+        - createTable:
+            tableName: wallpaper
+            columns:
+              - column:
+                  name: id
+                  type: varchar(100)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 002-create-theme
+      author: milan
+      changes:
+        - createTable:
+            tableName: theme
+            columns:
+              - column:
+                  name: id
+                  type: varchar(100)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 003-create-smart-application
+      author: milan
+      changes:
+        - createTable:
+            tableName: smart_application
+            columns:
+              - column:
+                  name: id
+                  type: varchar(100)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: type
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: launch_message
+                  type: varchar(500)
+
+  - changeSet:
+      id: 004-create-menu
+      author: milan
+      changes:
+        - createTable:
+            tableName: menu
+            columns:
+              - column:
+                  name: id
+                  type: varchar(100)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: parent_menu_id
+                  type: varchar(100)
+
+        - addForeignKeyConstraint:
+            constraintName: fk_menu_parent
+            baseTableName: menu
+            baseColumnNames: parent_menu_id
+            referencedTableName: menu
+            referencedColumnNames: id
+
+  - changeSet:
+      id: 005-create-user-group
+      author: milan
+      changes:
+        - createTable:
+            tableName: user_group
+            columns:
+              - column:
+                  name: id
+                  type: varchar(100)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: access_code
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 006-create-user-account
+      author: milan
+      changes:
+        - createTable:
+            tableName: user_account
+            columns:
+              - column:
+                  name: id
+                  type: varchar(100)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: role
+                  type: varchar(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: group_id
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: root_menu_id
+                  type: varchar(100)
+              - column:
+                  name: wallpaper_id
+                  type: varchar(100)
+              - column:
+                  name: theme_id
+                  type: varchar(100)
+
+        - addForeignKeyConstraint:
+            constraintName: fk_user_group
+            baseTableName: user_account
+            baseColumnNames: group_id
+            referencedTableName: user_group
+            referencedColumnNames: id
+
+        - addForeignKeyConstraint:
+            constraintName: fk_user_root_menu
+            baseTableName: user_account
+            baseColumnNames: root_menu_id
+            referencedTableName: menu
+            referencedColumnNames: id
+
+        - addForeignKeyConstraint:
+            constraintName: fk_user_wallpaper
+            baseTableName: user_account
+            baseColumnNames: wallpaper_id
+            referencedTableName: wallpaper
+            referencedColumnNames: id
+
+        - addForeignKeyConstraint:
+            constraintName: fk_user_theme
+            baseTableName: user_account
+            baseColumnNames: theme_id
+            referencedTableName: theme
+            referencedColumnNames: id
+
+  - changeSet:
+      id: 007-create-menu-item
+      author: milan
+      changes:
+        - createTable:
+            tableName: menu_item
+            columns:
+              - column:
+                  name: id
+                  type: varchar(100)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: position_index
+                  type: int
+              - column:
+                  name: menu_id
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: application_id
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+
+        - addForeignKeyConstraint:
+            constraintName: fk_menu_item_menu
+            baseTableName: menu_item
+            baseColumnNames: menu_id
+            referencedTableName: menu
+            referencedColumnNames: id
+
+        - addForeignKeyConstraint:
+            constraintName: fk_menu_item_application
+            baseTableName: menu_item
+            baseColumnNames: application_id
+            referencedTableName: smart_application
+            referencedColumnNames: id

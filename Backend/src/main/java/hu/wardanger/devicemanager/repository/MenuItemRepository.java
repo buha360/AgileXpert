@@ -1,0 +1,7 @@
+package hu.wardanger.devicemanager.repository;
+
+import hu.wardanger.devicemanager.entity.MenuItem;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface MenuItemRepository extends JpaRepository<MenuItem, String> {
+}

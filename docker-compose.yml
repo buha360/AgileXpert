@@ -1,0 +1,15 @@
+services:
+  oracle-free:
+    image: gvenzl/oracle-free:23-slim
+    container_name: oracle-free
+    ports:
+      - "1521:1521"
+    environment:
+      ORACLE_PASSWORD: oracle
+      APP_USER: devicemanager
+      APP_USER_PASSWORD: devicemanager
+    volumes:
+      - oracle_data:/opt/oracle/oradata
+
+volumes:
+  oracle_data:

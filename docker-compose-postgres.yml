@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: devicemanager-postgres
+    environment:
+      POSTGRES_DB: devicemanager
+      POSTGRES_USER: devicemanager
+      POSTGRES_PASSWORD: devicemanager
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

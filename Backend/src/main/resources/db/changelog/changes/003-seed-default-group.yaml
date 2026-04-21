@@ -1,0 +1,46 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-seed-default-group
+      author: milan
+      changes:
+        - insert:
+            tableName: user_group
+            columns:
+              - column:
+                  name: id
+                  value: group-buha-family
+              - column:
+                  name: name
+                  value: Buha Family
+              - column:
+                  name: access_code
+                  value: asd
+
+        - insert:
+            tableName: menu
+            columns:
+              - column:
+                  name: id
+                  value: menu-buha-admin-root
+              - column:
+                  name: name
+                  value: Buha főmenüje
+
+        - insert:
+            tableName: user_account
+            columns:
+              - column:
+                  name: id
+                  value: user-buha-admin
+              - column:
+                  name: name
+                  value: Buha
+              - column:
+                  name: role
+                  value: ADMIN
+              - column:
+                  name: group_id
+                  value: group-buha-family
+              - column:
+                  name: root_menu_id
+                  value: menu-buha-admin-root
