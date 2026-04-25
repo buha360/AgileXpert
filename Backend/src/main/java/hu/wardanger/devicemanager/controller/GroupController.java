@@ -13,8 +13,12 @@ import hu.wardanger.devicemanager.mapper.GroupMapper;
 import hu.wardanger.devicemanager.mapper.UserMapper;
 import hu.wardanger.devicemanager.service.GroupService;
 import hu.wardanger.devicemanager.service.UserAccountService;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -25,22 +29,14 @@ import java.util.List;
 @Tag(name = "Groups", description = "Endpoints for managing groups and group users")
 @RestController
 @RequestMapping("/api/groups")
+@Data
+@AllArgsConstructor
 public class GroupController {
 
     private final GroupService groupService;
     private final UserAccountService userAccountService;
     private final GroupMapper groupMapper;
     private final UserMapper userMapper;
-
-    public GroupController(GroupService groupService,
-                           UserAccountService userAccountService,
-                           GroupMapper groupMapper,
-                           UserMapper userMapper) {
-        this.groupService = groupService;
-        this.userAccountService = userAccountService;
-        this.groupMapper = groupMapper;
-        this.userMapper = userMapper;
-    }
 
     @Operation(
             summary = "List all groups",

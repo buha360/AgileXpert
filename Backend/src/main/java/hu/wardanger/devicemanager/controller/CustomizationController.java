@@ -8,8 +8,12 @@ import hu.wardanger.devicemanager.entity.Theme;
 import hu.wardanger.devicemanager.entity.Wallpaper;
 import hu.wardanger.devicemanager.mapper.CustomizationMapper;
 import hu.wardanger.devicemanager.service.CustomizationService;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -19,16 +23,12 @@ import java.util.List;
 
 @Tag(name = "Customization", description = "Endpoints for wallpapers and themes")
 @RestController
+@Data
+@AllArgsConstructor
 public class CustomizationController {
 
     private final CustomizationService customizationService;
     private final CustomizationMapper customizationMapper;
-
-    public CustomizationController(CustomizationService customizationService,
-                                   CustomizationMapper customizationMapper) {
-        this.customizationService = customizationService;
-        this.customizationMapper = customizationMapper;
-    }
 
     @Operation(
             summary = "List all wallpapers",

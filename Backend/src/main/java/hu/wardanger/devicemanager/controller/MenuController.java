@@ -10,27 +10,28 @@ import hu.wardanger.devicemanager.entity.MenuItem;
 import hu.wardanger.devicemanager.entity.UserAccount;
 import hu.wardanger.devicemanager.mapper.MenuMapper;
 import hu.wardanger.devicemanager.service.MenuManagementService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 import java.util.Comparator;
 import java.util.List;
 
 @Tag(name = "Menus", description = "Endpoints for managing root menus, submenus and applications")
 @RestController
+@Data
+@AllArgsConstructor
 public class MenuController {
 
     private final MenuManagementService menuManagementService;
     private final MenuMapper menuMapper;
-
-    public MenuController(MenuManagementService menuManagementService,
-                          MenuMapper menuMapper) {
-        this.menuManagementService = menuManagementService;
-        this.menuMapper = menuMapper;
-    }
 
     @Operation(
             summary = "Get user's root menu",

@@ -7,16 +7,17 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Setter
-@Getter
+
 @Entity
 @Table(name = "menu")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Menu {
 
     @Id
@@ -33,12 +34,4 @@ public class Menu {
 
     @OneToMany(mappedBy = "menu")
     private List<MenuItem> menuItems = new ArrayList<>();
-
-    public Menu() {}
-
-    public Menu(String id, String name) {
-        this.id = id;
-        this.name = name;
-    }
-
 }

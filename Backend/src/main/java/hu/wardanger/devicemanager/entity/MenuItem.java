@@ -6,13 +6,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-@Setter
-@Getter
 @Entity
 @Table(name = "menu_item")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class MenuItem {
 
     @Id
@@ -29,12 +29,4 @@ public class MenuItem {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "application_id")
     private SmartApplication application;
-
-    public MenuItem() {}
-
-    public MenuItem(String id, String name, Integer positionIndex) {
-        this.id = id;
-        this.name = name;
-        this.positionIndex = positionIndex;
-    }
 }

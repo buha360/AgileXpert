@@ -8,13 +8,13 @@ import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-@Setter
-@Getter
 @Entity
 @Table(name = "user_group")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class UserGroup {
 
     @Id
@@ -26,12 +26,4 @@ public class UserGroup {
 
     @OneToMany(mappedBy = "group")
     private List<UserAccount> users = new ArrayList<>();
-
-    public UserGroup() {}
-
-    public UserGroup(String id, String name, String accessCode) {
-        this.id = id;
-        this.name = name;
-        this.accessCode = accessCode;
-    }
 }
