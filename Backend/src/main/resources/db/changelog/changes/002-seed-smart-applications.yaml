@@ -9,7 +9,7 @@ databaseChangeLog:
               - column: { name: id, value: app-minesweeper }
               - column: { name: name, value: Minesweeper }
               - column: { name: type, value: GAME }
-              - column: { name: launch_message, value: Aknakereső alkalmazás elindult. }
+              - column: { name: launch_message, value: Aknakeresö alkalmazás elindult. }
 
         - insert:
             tableName: smart_application

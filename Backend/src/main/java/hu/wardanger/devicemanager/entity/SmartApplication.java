@@ -21,8 +21,7 @@ public class SmartApplication {
 
     private String launchMessage;
 
-    public SmartApplication() {
-    }
+    public SmartApplication() {}
 
     public SmartApplication(String id, String name, String type, String launchMessage) {
         this.id = id;
@@ -30,5 +29,4 @@ public class SmartApplication {
         this.type = type;
         this.launchMessage = launchMessage;
     }
-
 }

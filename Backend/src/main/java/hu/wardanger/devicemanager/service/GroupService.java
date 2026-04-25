@@ -19,13 +19,16 @@ public class GroupService {
     private final UserGroupRepository userGroupRepository;
     private final UserAccountRepository userAccountRepository;
     private final MenuRepository menuRepository;
+    private final CustomizationService customizationService;
 
     public GroupService(UserGroupRepository userGroupRepository,
                         UserAccountRepository userAccountRepository,
-                        MenuRepository menuRepository) {
+                        MenuRepository menuRepository,
+                        CustomizationService customizationService) {
         this.userGroupRepository = userGroupRepository;
         this.userAccountRepository = userAccountRepository;
         this.menuRepository = menuRepository;
+        this.customizationService = customizationService;
     }
 
     public List<UserGroup> findAllGroups() {
@@ -33,7 +36,7 @@ public class GroupService {
     }
 
     @Transactional
-    public UserGroup registerGroup(String groupName, String accessCode, String adminUserName) {
+    public UserGroup registerGroup(String groupName, String accessCode, String adminUserName, String adminPassword) {
         String groupId = UUID.randomUUID().toString();
         String menuId = UUID.randomUUID().toString();
         String adminId = UUID.randomUUID().toString();
@@ -41,12 +44,14 @@ public class GroupService {
         UserGroup userGroup = new UserGroup(groupId, groupName, accessCode);
         userGroupRepository.save(userGroup);
 
-        Menu rootMenu = new Menu(menuId, adminUserName + " főmenüje");
+        Menu rootMenu = new Menu(menuId, adminUserName + " fömenüje");
         menuRepository.save(rootMenu);
 
-        UserAccount adminUser = new UserAccount(adminId, adminUserName, UserRole.ADMIN);
+        UserAccount adminUser = new UserAccount(adminId, adminUserName, adminPassword, UserRole.ADMIN);
         adminUser.setGroup(userGroup);
         adminUser.setRootMenu(rootMenu);
+        adminUser.setWallpaper(customizationService.findDefaultWallpaper());
+        adminUser.setTheme(customizationService.findDefaultTheme());
 
         userAccountRepository.save(adminUser);
 

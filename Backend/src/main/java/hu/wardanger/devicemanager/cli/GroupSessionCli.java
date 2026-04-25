@@ -21,17 +21,23 @@ public class GroupSessionCli {
         this.userSessionCli = userSessionCli;
     }
 
-    public void openGroupSession(Scanner scanner, UserGroup group) {
+    public void openGroupSession(Scanner scanner, UserGroup group, UserAccount currentUser) {
+        if (currentUser.getRole() == UserRole.MEMBER) {
+            System.out.println("Belépés felhasználóként: " + currentUser.getName());
+            userSessionCli.openUserSession(scanner, currentUser);
+            return;
+        }
+
         boolean running = true;
 
         while (running) {
-            printGroupMenu(group);
+            printGroupMenu(group, currentUser);
             String input = scanner.nextLine();
 
             switch (input) {
                 case "1" -> listUsers(group);
-                case "2" -> createUser(scanner, group);
-                case "3" -> deleteUser(scanner, group);
+                case "2" -> createUser(scanner, group, currentUser);
+                case "3" -> deleteUser(scanner, group, currentUser);
                 case "4" -> enterAsUser(scanner, group);
                 case "0" -> {
                     running = false;
@@ -44,8 +50,9 @@ public class GroupSessionCli {
         }
     }
 
-    private void printGroupMenu(UserGroup group) {
+    private void printGroupMenu(UserGroup group, UserAccount currentUser) {
         System.out.println("=== " + group.getName().toUpperCase() + " GROUP MENÜ ===");
+        System.out.println("Aktuális felhasználó: " + currentUser.getName() + " [" + currentUser.getRole() + "]");
         System.out.println("1. Felhasználók listázása");
         System.out.println("2. Felhasználó létrehozása");
         System.out.println("3. Felhasználó törlése");
@@ -62,32 +69,29 @@ public class GroupSessionCli {
             return;
         }
 
-        System.out.println("Felhasználók:");
-        for (int i = 0; i < users.size(); i++) {
-            System.out.println((i + 1) + ". " + users.get(i).getName() + " [" + users.get(i).getRole() + "]");
-        }
+        printUsers(users);
     }
 
-    private void createUser(Scanner scanner, UserGroup group) {
-        List<UserAccount> users = userAccountService.findUsersByGroup(group.getId());
-        UserAccount admin = users.stream()
-                .filter(u -> u.getRole() == UserRole.ADMIN)
-                .findFirst()
-                .orElse(null);
-
-        if (admin == null) {
-            System.out.println("Nincs admin user a groupban.");
+    private void createUser(Scanner scanner, UserGroup group, UserAccount currentUser) {
+        if (requireAdmin(currentUser)) {
             return;
         }
 
         System.out.print("Add meg az új felhasználó nevét: ");
         String userName = scanner.nextLine();
 
-        UserAccount created = userAccountService.createUser(group.getId(), userName);
+        System.out.print("Add meg az új felhasználó jelszavát: ");
+        String password = scanner.nextLine();
+
+        UserAccount created = userAccountService.createUser(group.getId(), userName, password);
         System.out.println("Felhasználó létrehozva: " + created.getName());
     }
 
-    private void deleteUser(Scanner scanner, UserGroup group) {
+    private void deleteUser(Scanner scanner, UserGroup group, UserAccount currentUser) {
+        if (requireAdmin(currentUser)) {
+            return;
+        }
+
         List<UserAccount> users = userAccountService.findUsersByGroup(group.getId());
 
         if (users.isEmpty()) {
@@ -95,34 +99,20 @@ public class GroupSessionCli {
             return;
         }
 
-        System.out.println("Felhasználók:");
-        for (int i = 0; i < users.size(); i++) {
-            System.out.println((i + 1) + ". " + users.get(i).getName() + " [" + users.get(i).getRole() + "]");
+        printUsers(users);
+
+        UserAccount selectedUser = selectUserByIndex(scanner, users, "Add meg a törlendő felhasználó sorszámát: ");
+        if (selectedUser == null) {
+            return;
         }
 
-        System.out.print("Add meg a törlendő felhasználó sorszámát: ");
-        String inputIndex = scanner.nextLine();
-
-        try {
-            int selectedIndex = Integer.parseInt(inputIndex);
-
-            if (selectedIndex < 1 || selectedIndex > users.size()) {
-                System.out.println("Érvénytelen sorszám.");
-                return;
-            }
-
-            UserAccount selectedUser = users.get(selectedIndex - 1);
-
-            if (selectedUser.getRole() == UserRole.ADMIN) {
-                System.out.println("Az admin felhasználó nem törölhető.");
-                return;
-            }
-
-            userAccountService.deleteUserById(selectedUser.getId());
-            System.out.println("Felhasználó törölve: " + selectedUser.getName());
-        } catch (NumberFormatException e) {
-            System.out.println("Kérlek számot adj meg.");
+        if (selectedUser.getRole() == UserRole.ADMIN) {
+            System.out.println("Az admin felhasználó nem törölhető.");
+            return;
         }
+
+        userAccountService.deleteUserById(selectedUser.getId());
+        System.out.println("Felhasználó törölve: " + selectedUser.getName());
     }
 
     private void enterAsUser(Scanner scanner, UserGroup group) {
@@ -133,12 +123,41 @@ public class GroupSessionCli {
             return;
         }
 
+        printUsers(users);
+
+        UserAccount selectedUser = selectUserByIndex(scanner, users, "Add meg a kiválasztott felhasználó sorszámát: ");
+        if (selectedUser == null) {
+            return;
+        }
+
+        System.out.print("Add meg a jelszót: ");
+        String password = scanner.nextLine();
+
+        try {
+            UserAccount authenticatedUser = userAccountService.authenticateUser(selectedUser.getId(), password);
+            userSessionCli.openUserSession(scanner, authenticatedUser);
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private boolean requireAdmin(UserAccount currentUser) {
+        if (currentUser.getRole() != UserRole.ADMIN) {
+            System.out.println("Ehhez admin jogosultság szükséges.");
+            return true;
+        }
+        return false;
+    }
+
+    private void printUsers(List<UserAccount> users) {
         System.out.println("Felhasználók:");
         for (int i = 0; i < users.size(); i++) {
             System.out.println((i + 1) + ". " + users.get(i).getName() + " [" + users.get(i).getRole() + "]");
         }
+    }
 
-        System.out.print("Add meg a kiválasztott felhasználó sorszámát: ");
+    private UserAccount selectUserByIndex(Scanner scanner, List<UserAccount> users, String prompt) {
+        System.out.print(prompt);
         String inputIndex = scanner.nextLine();
 
         try {
@@ -146,15 +165,13 @@ public class GroupSessionCli {
 
             if (selectedIndex < 1 || selectedIndex > users.size()) {
                 System.out.println("Érvénytelen sorszám.");
-                return;
+                return null;
             }
 
-            UserAccount selectedUser = users.get(selectedIndex - 1);
-            UserAccount loadedUser = userAccountService.findDetailedUserById(selectedUser.getId());
-            userSessionCli.openUserSession(scanner, loadedUser);
-
+            return users.get(selectedIndex - 1);
         } catch (NumberFormatException e) {
             System.out.println("Kérlek számot adj meg.");
+            return null;
         }
     }
 }

@@ -24,7 +24,7 @@ databaseChangeLog:
                   value: menu-buha-admin-root
               - column:
                   name: name
-                  value: Buha főmenüje
+                  value: Buha fömenüje
 
         - insert:
             tableName: user_account
@@ -36,6 +36,9 @@ databaseChangeLog:
                   name: name
                   value: Buha
               - column:
+                  name: user_password
+                  value: asd
+              - column:
                   name: role
                   value: ADMIN
               - column:
@@ -44,3 +47,47 @@ databaseChangeLog:
               - column:
                   name: root_menu_id
                   value: menu-buha-admin-root
+              - column:
+                  name: wallpaper_id
+                  value: wallpaper-mountain
+              - column:
+                  name: theme_id
+                  value: theme-dark
+
+        - insert:
+            tableName: menu_item
+            columns:
+              - column:
+                  name: id
+                  value: menu-item-buha-openmap
+              - column:
+                  name: name
+                  value: OpenMap
+              - column:
+                  name: position_index
+                  valueNumeric: 1
+              - column:
+                  name: menu_id
+                  value: menu-buha-admin-root
+              - column:
+                  name: application_id
+                  value: app-openmap
+
+        - insert:
+            tableName: menu_item
+            columns:
+              - column:
+                  name: id
+                  value: menu-item-buha-paint
+              - column:
+                  name: name
+                  value: Paint
+              - column:
+                  name: position_index
+                  valueNumeric: 2
+              - column:
+                  name: menu_id
+                  value: menu-buha-admin-root
+              - column:
+                  name: application_id
+                  value: app-paint

@@ -10,9 +10,11 @@ import java.util.Optional;
 public interface UserAccountRepository extends JpaRepository<UserAccount, String> {
 
     @EntityGraph(attributePaths = {
-            "rootMenu"
+            "rootMenu",
+            "wallpaper",
+            "theme"
     })
-    Optional<UserAccount> findDetailedById(String id);
 
+    Optional<UserAccount> findDetailedById(String id);
     List<UserAccount> findByGroupId(String groupId);
 }

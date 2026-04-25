@@ -1,13 +1,6 @@
 package hu.wardanger.devicemanager.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -22,6 +15,9 @@ public class UserAccount {
     private String id;
 
     private String name;
+
+    @Column(name = "user_password")
+    private String password;
 
     @Enumerated(EnumType.STRING)
     private UserRole role;
@@ -45,9 +41,10 @@ public class UserAccount {
     public UserAccount() {
     }
 
-    public UserAccount(String id, String name, UserRole role) {
+    public UserAccount(String id, String name, String password, UserRole role) {
         this.id = id;
         this.name = name;
+        this.password = password;
         this.role = role;
     }
 }

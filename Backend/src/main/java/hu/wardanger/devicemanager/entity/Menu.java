@@ -34,8 +34,7 @@ public class Menu {
     @OneToMany(mappedBy = "menu")
     private List<MenuItem> menuItems = new ArrayList<>();
 
-    public Menu() {
-    }
+    public Menu() {}
 
     public Menu(String id, String name) {
         this.id = id;

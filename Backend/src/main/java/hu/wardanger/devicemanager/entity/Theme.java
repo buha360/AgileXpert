@@ -17,12 +17,10 @@ public class Theme {
 
     private String name;
 
-    public Theme() {
-    }
+    public Theme() {}
 
     public Theme(String id, String name) {
         this.id = id;
         this.name = name;
     }
-
 }

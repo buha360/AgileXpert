@@ -20,17 +20,20 @@ public class UserAccountService {
     private final UserAccountRepository userAccountRepository;
     private final MenuRepository menuRepository;
     private final UserGroupRepository userGroupRepository;
+    private final CustomizationService customizationService;
 
     public UserAccountService(UserAccountRepository userAccountRepository,
                               MenuRepository menuRepository,
-                              UserGroupRepository userGroupRepository) {
+                              UserGroupRepository userGroupRepository,
+                              CustomizationService customizationService) {
         this.userAccountRepository = userAccountRepository;
         this.menuRepository = menuRepository;
         this.userGroupRepository = userGroupRepository;
+        this.customizationService = customizationService;
     }
 
     @Transactional
-    public UserAccount createUser(String groupId, String name) {
+    public UserAccount createUser(String groupId, String name, String password) {
         UserGroup group = userGroupRepository.findById(groupId)
                 .orElseThrow(() -> new IllegalArgumentException("Nincs ilyen group."));
 
@@ -40,9 +43,11 @@ public class UserAccountService {
         Menu rootMenu = new Menu(menuId, name + " főmenüje");
         menuRepository.save(rootMenu);
 
-        UserAccount userAccount = new UserAccount(userId, name, UserRole.MEMBER);
+        UserAccount userAccount = new UserAccount(userId, name, password, UserRole.MEMBER);
         userAccount.setGroup(group);
         userAccount.setRootMenu(rootMenu);
+        userAccount.setWallpaper(customizationService.findDefaultWallpaper());
+        userAccount.setTheme(customizationService.findDefaultTheme());
 
         return userAccountRepository.save(userAccount);
     }
@@ -62,6 +67,23 @@ public class UserAccountService {
     public UserAccount findDetailedUserById(String id) {
         UserAccount user = userAccountRepository.findDetailedById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Nincs ilyen felhasználó."));
+
+        if (user.getRootMenu() != null) {
+            Hibernate.initialize(user.getRootMenu().getMenuItems());
+            Hibernate.initialize(user.getRootMenu().getChildMenus());
+        }
+
+        return user;
+    }
+
+    @Transactional(readOnly = true)
+    public UserAccount authenticateUser(String userId, String password) {
+        UserAccount user = userAccountRepository.findDetailedById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Nincs ilyen felhasználó."));
+
+        if (!user.getPassword().equals(password)) {
+            throw new IllegalArgumentException("Hibás jelszó.");
+        }
 
         if (user.getRootMenu() != null) {
             Hibernate.initialize(user.getRootMenu().getMenuItems());

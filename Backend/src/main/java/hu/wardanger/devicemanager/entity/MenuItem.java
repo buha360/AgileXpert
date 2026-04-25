@@ -30,13 +30,11 @@ public class MenuItem {
     @JoinColumn(name = "application_id")
     private SmartApplication application;
 
-    public MenuItem() {
-    }
+    public MenuItem() {}
 
     public MenuItem(String id, String name, Integer positionIndex) {
         this.id = id;
         this.name = name;
         this.positionIndex = positionIndex;
     }
-
 }

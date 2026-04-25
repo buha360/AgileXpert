@@ -1,0 +1,52 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-seed-wallpapers-and-themes
+      author: milan
+      changes:
+        - insert:
+            tableName: wallpaper
+            columns:
+              - column: { name: id, value: wallpaper-mountain }
+              - column: { name: name, value: Mountain }
+
+        - insert:
+            tableName: wallpaper
+            columns:
+              - column: { name: id, value: wallpaper-space }
+              - column: { name: name, value: Space }
+
+        - insert:
+            tableName: wallpaper
+            columns:
+              - column: { name: id, value: wallpaper-family }
+              - column: { name: name, value: Family }
+
+        - insert:
+            tableName: wallpaper
+            columns:
+              - column: { name: id, value: wallpaper-minimal }
+              - column: { name: name, value: Minimal }
+
+        - insert:
+            tableName: theme
+            columns:
+              - column: { name: id, value: theme-light }
+              - column: { name: name, value: Light }
+
+        - insert:
+            tableName: theme
+            columns:
+              - column: { name: id, value: theme-dark }
+              - column: { name: name, value: Dark }
+
+        - insert:
+            tableName: theme
+            columns:
+              - column: { name: id, value: theme-blue }
+              - column: { name: name, value: Blue }
+
+        - insert:
+            tableName: theme
+            columns:
+              - column: { name: id, value: theme-classic }
+              - column: { name: name, value: Classic }

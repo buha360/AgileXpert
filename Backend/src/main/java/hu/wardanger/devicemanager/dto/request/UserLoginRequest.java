@@ -1,4 +1,10 @@
 package hu.wardanger.devicemanager.dto.request;
 
-public class asd {
+import lombok.*;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class UserLoginRequest {
+    private String password;
 }

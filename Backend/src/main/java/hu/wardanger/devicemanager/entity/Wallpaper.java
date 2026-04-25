@@ -17,12 +17,10 @@ public class Wallpaper {
 
     private String name;
 
-    public Wallpaper() {
-    }
+    public Wallpaper() {}
 
     public Wallpaper(String id, String name) {
         this.id = id;
         this.name = name;
     }
-
 }

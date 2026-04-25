@@ -1,4 +1,11 @@
 package hu.wardanger.devicemanager.dto.response;
 
-public class asd {
+import lombok.*;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class GroupSummaryResponse {
+    private String id;
+    private String name;
 }
