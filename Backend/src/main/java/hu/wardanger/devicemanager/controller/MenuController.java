@@ -1,10 +1,10 @@
 package hu.wardanger.devicemanager.controller;
 
-import hu.wardanger.devicemanager.dto.request.AddApplicationRequest;
-import hu.wardanger.devicemanager.dto.request.CreateSubMenuRequest;
-import hu.wardanger.devicemanager.dto.response.LaunchResponse;
-import hu.wardanger.devicemanager.dto.response.RootMenuResponse;
-import hu.wardanger.devicemanager.dto.response.SubMenuResponse;
+import hu.wardanger.devicemanager.models.request.AddApplicationRequest;
+import hu.wardanger.devicemanager.models.request.CreateSubMenuRequest;
+import hu.wardanger.devicemanager.models.response.LaunchResponse;
+import hu.wardanger.devicemanager.models.response.RootMenuResponse;
+import hu.wardanger.devicemanager.models.response.SubMenuResponse;
 import hu.wardanger.devicemanager.entity.Menu;
 import hu.wardanger.devicemanager.entity.MenuItem;
 import hu.wardanger.devicemanager.entity.UserAccount;

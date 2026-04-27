@@ -1,0 +1,47 @@
+<div class="page">
+  <div class="page-header">
+    <h1>Group Login</h1>
+    <button (click)="goBack()">Back</button>
+  </div>
+
+  <section class="card">
+    <h2>Available Users</h2>
+
+    <div><strong>Group ID:</strong> {{ groupId }}</div>
+    <br />
+
+    <div *ngIf="loading">Loading...</div>
+    <div *ngIf="errorMessage">{{ errorMessage }}</div>
+
+    <ul *ngIf="!loading && users.length > 0" class="user-list">
+      <li *ngFor="let user of users" class="user-item">
+        <div>
+          <strong>{{ user.name }}</strong> — {{ user.role }}
+        </div>
+        <button (click)="selectUser(user.id!)">Select</button>
+      </li>
+    </ul>
+
+    <div *ngIf="!loading && users.length === 0">
+      No users found.
+    </div>
+  </section>
+
+  <section class="card" *ngIf="selectedUserId">
+    <h2>User Login</h2>
+
+    <div><strong>Selected user ID:</strong> {{ selectedUserId }}</div>
+
+    <div class="form-grid">
+      <input [(ngModel)]="password" placeholder="Enter password" type="password" />
+    </div>
+
+    <div *ngIf="loginErrorMessage" class="error-message">
+      {{ loginErrorMessage }}
+    </div>
+
+    <div class="button-row">
+      <button (click)="login()">Login</button>
+    </div>
+  </section>
+</div>

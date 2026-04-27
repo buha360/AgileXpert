@@ -7,7 +7,6 @@ import hu.wardanger.devicemanager.entity.UserRole;
 import hu.wardanger.devicemanager.repository.MenuRepository;
 import hu.wardanger.devicemanager.repository.UserAccountRepository;
 import hu.wardanger.devicemanager.repository.UserGroupRepository;
-import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -65,15 +64,8 @@ public class UserAccountService {
 
     @Transactional(readOnly = true)
     public UserAccount findDetailedUserById(String id) {
-        UserAccount user = userAccountRepository.findDetailedById(id)
+        return userAccountRepository.findDetailedById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Nincs ilyen felhasználó."));
-
-        if (user.getRootMenu() != null) {
-            Hibernate.initialize(user.getRootMenu().getMenuItems());
-            Hibernate.initialize(user.getRootMenu().getChildMenus());
-        }
-
-        return user;
     }
 
     @Transactional(readOnly = true)
@@ -83,11 +75,6 @@ public class UserAccountService {
 
         if (!user.getPassword().equals(password)) {
             throw new IllegalArgumentException("Hibás jelszó.");
-        }
-
-        if (user.getRootMenu() != null) {
-            Hibernate.initialize(user.getRootMenu().getMenuItems());
-            Hibernate.initialize(user.getRootMenu().getChildMenus());
         }
 
         return user;

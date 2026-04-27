@@ -1,3 +1,5 @@
-spring.datasource.url=jdbc:oracle:thin:@localhost:1521/FREEPDB1
-spring.datasource.username=devicemanager
-spring.datasource.password=devicemanager
+spring:
+  datasource:
+    url: jdbc:oracle:thin:@localhost:1521/FREEPDB1
+    username: devicemanager
+    password: devicemanager

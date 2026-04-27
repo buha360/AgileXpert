@@ -1,0 +1,98 @@
+<div
+  class="desktop-shell"
+  *ngIf="menu as currentMenu"
+  [ngClass]="getThemeClass(currentMenu.themeName)"
+  [style.background-image]="'url(' + getWallpaperUrl(currentMenu.wallpaperName) + ')'"
+>
+  <div class="desktop-overlay">
+    <header class="top-bar">
+      <div class="top-bar-left">
+        <div class="system-title">{{ getDisplayMenuName(currentMenu.menuName) }}</div>
+        <div class="system-subtitle">Interactive desktop</div>
+      </div>
+
+      <div class="top-bar-right">
+        <div class="menu-dropdown-wrapper">
+          <button class="status-chip chip-button" (click)="toggleWallpaperMenu()" type="button">
+            <span class="status-label">Wallpaper</span>
+            <span>{{ currentMenu.wallpaperName || 'None' }}</span>
+          </button>
+
+          <div class="dropdown-panel" *ngIf="wallpaperMenuOpen">
+            <button
+              class="dropdown-option"
+              *ngFor="let wallpaper of wallpapers; trackBy: trackById"
+              type="button"
+              (click)="selectWallpaper(wallpaper.id!)"
+            >
+              {{ wallpaper.name }}
+            </button>
+          </div>
+        </div>
+
+        <div class="menu-dropdown-wrapper">
+          <button class="status-chip chip-button" (click)="toggleThemeMenu()" type="button">
+            <span class="status-label">Theme</span>
+            <span>{{ currentMenu.themeName || 'None' }}</span>
+          </button>
+
+          <div class="dropdown-panel" *ngIf="themeMenuOpen">
+            <button
+              class="dropdown-option"
+              *ngFor="let theme of themes; trackBy: trackById"
+              type="button"
+              (click)="selectTheme(theme.id!)"
+            >
+              {{ theme.name }}
+            </button>
+          </div>
+        </div>
+
+        <button class="back-button" (click)="goBack()">Back</button>
+      </div>
+    </header>
+
+    <main class="desktop-content">
+      <section class="dock-panel">
+        <div class="section-title">Favorite Applications</div>
+
+        <div class="dock" *ngIf="currentMenu.applications?.length; else noApps">
+          <button
+            class="dock-icon"
+            *ngFor="let app of currentMenu.applications; trackBy: trackById"
+            type="button"
+          >
+            <div class="dock-icon-symbol">{{ getAppIcon(app.name) }}</div>
+            <div class="dock-icon-label">{{ app.name }}</div>
+          </button>
+        </div>
+
+        <ng-template #noApps>
+          <div class="empty-state">No applications found.</div>
+        </ng-template>
+      </section>
+
+      <section class="folders-panel">
+        <div class="section-title">Folders</div>
+
+        <div class="folders-grid" *ngIf="currentMenu.subMenus?.length; else noFolders">
+          <div
+            class="folder-card"
+            *ngFor="let submenu of currentMenu.subMenus; trackBy: trackById"
+          >
+            <div class="folder-icon">📁</div>
+            <div class="folder-name">{{ submenu.name }}</div>
+            <div class="folder-id">{{ submenu.id }}</div>
+          </div>
+        </div>
+
+        <ng-template #noFolders>
+          <div class="empty-state">No submenus found.</div>
+        </ng-template>
+      </section>
+    </main>
+  </div>
+</div>
+
+<div class="page-state" *ngIf="loading">Loading...</div>
+<div class="page-state error" *ngIf="errorMessage">{{ errorMessage }}</div>

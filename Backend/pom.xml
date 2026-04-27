@@ -47,6 +47,12 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- JPA / Hibernate -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -106,6 +112,21 @@
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>3.0.2</version>
         </dependency>
+
+        <!-- OpenAPI spec generator -->
+        <dependency>
+            <groupId>org.openapitools</groupId>
+            <artifactId>openapi-generator-maven-plugin</artifactId>
+            <version>7.21.0</version>
+        </dependency>
+
+        <!-- Jackson -->
+        <dependency>
+            <groupId>org.openapitools</groupId>
+            <artifactId>jackson-databind-nullable</artifactId>
+            <version>0.2.10</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -133,6 +154,58 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+
+            <plugin>
+                <groupId>org.openapitools</groupId>
+                <artifactId>openapi-generator-maven-plugin</artifactId>
+                <version>7.21.0</version>
+                <executions>
+                    <execution>
+                        <id>generate-api</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${project.basedir}/src/main/resources/openapi/device-manager-openapi.yaml</inputSpec>
+                            <generatorName>spring</generatorName>
+                            <apiPackage>hu.wardanger.devicemanager.generated.api</apiPackage>
+                            <modelPackage>hu.wardanger.devicemanager.generated.model</modelPackage>
+                            <generateApiTests>true</generateApiTests>
+                            <generateModelTests>true</generateModelTests>
+                            <configOptions>
+                                <interfaceOnly>true</interfaceOnly>
+                                <useSpringBoot3>true</useSpringBoot3>
+                                <useTags>true</useTags>
+                                <skipDefaultInterface>true</skipDefaultInterface>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>h2</id>
+            <properties>
+                <spring-boot.run.profiles>h2</spring-boot.run.profiles>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>postgres</id>
+            <properties>
+                <spring-boot.run.profiles>postgres</spring-boot.run.profiles>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>oracle</id>
+            <properties>
+                <spring-boot.run.profiles>oracle</spring-boot.run.profiles>
+            </properties>
+        </profile>
+    </profiles>
 </project>

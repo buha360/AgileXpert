@@ -1,7 +1,7 @@
 package hu.wardanger.devicemanager.mapper;
 
-import hu.wardanger.devicemanager.dto.response.ThemeResponse;
-import hu.wardanger.devicemanager.dto.response.WallpaperResponse;
+import hu.wardanger.devicemanager.models.response.ThemeResponse;
+import hu.wardanger.devicemanager.models.response.WallpaperResponse;
 import hu.wardanger.devicemanager.entity.Theme;
 import hu.wardanger.devicemanager.entity.Wallpaper;
 import org.mapstruct.Mapper;

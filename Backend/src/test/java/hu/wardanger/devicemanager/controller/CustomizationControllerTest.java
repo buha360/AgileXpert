@@ -1,10 +1,10 @@
 package hu.wardanger.devicemanager.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import hu.wardanger.devicemanager.dto.request.SelectThemeRequest;
-import hu.wardanger.devicemanager.dto.request.SelectWallpaperRequest;
-import hu.wardanger.devicemanager.dto.response.ThemeResponse;
-import hu.wardanger.devicemanager.dto.response.WallpaperResponse;
+import hu.wardanger.devicemanager.models.request.SelectThemeRequest;
+import hu.wardanger.devicemanager.models.request.SelectWallpaperRequest;
+import hu.wardanger.devicemanager.models.response.ThemeResponse;
+import hu.wardanger.devicemanager.models.response.WallpaperResponse;
 import hu.wardanger.devicemanager.entity.Theme;
 import hu.wardanger.devicemanager.entity.Wallpaper;
 import hu.wardanger.devicemanager.mapper.CustomizationMapper;

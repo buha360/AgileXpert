@@ -1,7 +1,7 @@
 package hu.wardanger.devicemanager.mapper;
 
-import hu.wardanger.devicemanager.dto.response.MenuItemResponse;
-import hu.wardanger.devicemanager.dto.response.SubMenuResponse;
+import hu.wardanger.devicemanager.models.response.MenuItemResponse;
+import hu.wardanger.devicemanager.models.response.SubMenuResponse;
 import hu.wardanger.devicemanager.entity.Menu;
 import hu.wardanger.devicemanager.entity.MenuItem;
 import org.mapstruct.Mapper;

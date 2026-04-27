@@ -5,17 +5,22 @@ import hu.wardanger.devicemanager.entity.MenuItem;
 import hu.wardanger.devicemanager.entity.SmartApplication;
 import hu.wardanger.devicemanager.service.MenuManagementService;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Component
 public class SubMenuSessionCli {
 
     private final MenuManagementService menuManagementService;
+    private final TransactionTemplate transactionTemplate;
 
-    public SubMenuSessionCli(MenuManagementService menuManagementService) {
+    public SubMenuSessionCli(MenuManagementService menuManagementService,
+                             TransactionTemplate transactionTemplate) {
         this.menuManagementService = menuManagementService;
+        this.transactionTemplate = transactionTemplate;
     }
 
     public void openSubMenuSession(Scanner scanner, Menu submenu) {
@@ -52,9 +57,12 @@ public class SubMenuSessionCli {
     }
 
     private void listApplications(Menu submenu) {
-        List<MenuItem> items = getSubMenuItems(submenu);
+        AtomicReference<List<MenuItem>> itemsRef = new AtomicReference<>();
 
-        if (items.isEmpty()) {
+        inTransaction(() -> itemsRef.set(getSubMenuItems(submenu)));
+        List<MenuItem> items = itemsRef.get();
+
+        if (items == null || items.isEmpty()) {
             System.out.println("Nincs még alkalmazás az almenüben.");
             return;
         }
@@ -72,10 +80,7 @@ public class SubMenuSessionCli {
 
         printApplications(applications);
 
-        SmartApplication selectedApplication = selectApplicationByIndex(
-                scanner,
-                applications
-        );
+        SmartApplication selectedApplication = selectApplicationByIndex(scanner, applications);
 
         if (selectedApplication == null) {
             return;
@@ -90,9 +95,12 @@ public class SubMenuSessionCli {
     }
 
     private void removeApplication(Scanner scanner, Menu submenu) {
-        List<MenuItem> items = getSubMenuItems(submenu);
+        AtomicReference<List<MenuItem>> itemsRef = new AtomicReference<>();
 
-        if (items.isEmpty()) {
+        inTransaction(() -> itemsRef.set(getSubMenuItems(submenu)));
+        List<MenuItem> items = itemsRef.get();
+
+        if (items == null || items.isEmpty()) {
             System.out.println("Nincs törölhető alkalmazás az almenüben.");
             return;
         }
@@ -118,9 +126,12 @@ public class SubMenuSessionCli {
     }
 
     private void launchApplication(Scanner scanner, Menu submenu) {
-        List<MenuItem> items = getSubMenuItems(submenu);
+        AtomicReference<List<MenuItem>> itemsRef = new AtomicReference<>();
 
-        if (items.isEmpty()) {
+        inTransaction(() -> itemsRef.set(getSubMenuItems(submenu)));
+        List<MenuItem> items = itemsRef.get();
+
+        if (items == null || items.isEmpty()) {
             System.out.println("Nincs indítható alkalmazás az almenüben.");
             return;
         }
@@ -147,7 +158,12 @@ public class SubMenuSessionCli {
 
     private List<MenuItem> getSubMenuItems(Menu submenu) {
         Menu loadedSubmenu = menuManagementService.findSubMenuWithItems(submenu.getId());
-        return loadedSubmenu.getMenuItems() == null ? List.of() : loadedSubmenu.getMenuItems();
+
+        if (loadedSubmenu.getMenuItems() == null) {
+            return List.of();
+        }
+
+        return loadedSubmenu.getMenuItems().stream().toList();
     }
 
     private void printMenuItems(List<MenuItem> items) {
@@ -200,5 +216,9 @@ public class SubMenuSessionCli {
             System.out.println("Kérlek számot adj meg.");
             return null;
         }
+    }
+
+    private void inTransaction(Runnable action) {
+        transactionTemplate.executeWithoutResult(status -> action.run());
     }
 }

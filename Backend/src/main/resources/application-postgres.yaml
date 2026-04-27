@@ -1,3 +1,5 @@
-spring.datasource.url=jdbc:postgresql://localhost:5432/devicemanager
-spring.datasource.username=devicemanager
-spring.datasource.password=devicemanager
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/devicemanager
+    username: devicemanager
+    password: devicemanager

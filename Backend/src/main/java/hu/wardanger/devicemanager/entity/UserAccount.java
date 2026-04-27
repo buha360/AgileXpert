@@ -1,13 +1,12 @@
 package hu.wardanger.devicemanager.entity;
 
 import jakarta.persistence.*;
-
-import lombok.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "user_account")
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
 public class UserAccount {
 
@@ -37,4 +36,11 @@ public class UserAccount {
     @ManyToOne
     @JoinColumn(name = "theme_id")
     private Theme theme;
+
+    public UserAccount(String id, String name, String password, UserRole role) {
+        this.id = id;
+        this.name = name;
+        this.password = password;
+        this.role = role;
+    }
 }

@@ -1,12 +1,12 @@
 package hu.wardanger.devicemanager.controller;
 
-import hu.wardanger.devicemanager.dto.request.CreateGroupRequest;
-import hu.wardanger.devicemanager.dto.request.CreateUserRequest;
-import hu.wardanger.devicemanager.dto.request.UserLoginRequest;
-import hu.wardanger.devicemanager.dto.request.ValidateGroupAccessRequest;
-import hu.wardanger.devicemanager.dto.response.GroupAccessValidationResponse;
-import hu.wardanger.devicemanager.dto.response.GroupSummaryResponse;
-import hu.wardanger.devicemanager.dto.response.UserSummaryResponse;
+import hu.wardanger.devicemanager.models.request.CreateGroupRequest;
+import hu.wardanger.devicemanager.models.request.CreateUserRequest;
+import hu.wardanger.devicemanager.models.request.UserLoginRequest;
+import hu.wardanger.devicemanager.models.request.ValidateGroupAccessRequest;
+import hu.wardanger.devicemanager.models.response.GroupAccessValidationResponse;
+import hu.wardanger.devicemanager.models.response.GroupSummaryResponse;
+import hu.wardanger.devicemanager.models.response.UserSummaryResponse;
 import hu.wardanger.devicemanager.entity.UserAccount;
 import hu.wardanger.devicemanager.entity.UserGroup;
 import hu.wardanger.devicemanager.mapper.GroupMapper;

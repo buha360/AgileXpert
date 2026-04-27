@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: devicemanager
+  profiles:
+    default: h2
+
+  messages:
+    encoding: UTF-8
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.yaml

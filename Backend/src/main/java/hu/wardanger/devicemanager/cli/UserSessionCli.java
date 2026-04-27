@@ -9,10 +9,12 @@ import hu.wardanger.devicemanager.entity.Wallpaper;
 import hu.wardanger.devicemanager.service.CustomizationService;
 import hu.wardanger.devicemanager.service.MenuManagementService;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Component
 public class UserSessionCli {
@@ -20,13 +22,16 @@ public class UserSessionCli {
     private final MenuManagementService menuManagementService;
     private final SubMenuSessionCli subMenuSessionCli;
     private final CustomizationService customizationService;
+    private final TransactionTemplate transactionTemplate;
 
     public UserSessionCli(MenuManagementService menuManagementService,
                           SubMenuSessionCli subMenuSessionCli,
-                          CustomizationService customizationService) {
+                          CustomizationService customizationService,
+                          TransactionTemplate transactionTemplate) {
         this.menuManagementService = menuManagementService;
         this.subMenuSessionCli = subMenuSessionCli;
         this.customizationService = customizationService;
+        this.transactionTemplate = transactionTemplate;
     }
 
     public void openUserSession(Scanner scanner, UserAccount user) {
@@ -76,43 +81,47 @@ public class UserSessionCli {
     }
 
     private void showRootMenu(UserAccount user) {
-        UserAccount loadedUser = menuManagementService.findUserWithRootMenuItems(user.getId());
-        Menu rootMenu = loadedUser.getRootMenu();
+        inTransaction(() -> {
+            UserAccount loadedUser = menuManagementService.findUserWithRootMenuItems(user.getId());
+            Menu rootMenu = loadedUser.getRootMenu();
 
-        if (rootMenu == null) {
-            System.out.println("A felhasználóhoz még nincs főmenü rendelve.");
-            return;
-        }
+            if (rootMenu == null) {
+                System.out.println("A felhasználóhoz még nincs főmenü rendelve.");
+                return;
+            }
 
-        System.out.println("Főmenü neve: " + rootMenu.getName());
-        System.out.println("Aktuális háttérkép: " + loadedUser.getWallpaper().getName());
-        System.out.println("Aktuális arculat: " + loadedUser.getTheme().getName());
+            System.out.println("Főmenü neve: " + rootMenu.getName());
+            System.out.println("Aktuális háttérkép: " + loadedUser.getWallpaper().getName());
+            System.out.println("Aktuális arculat: " + loadedUser.getTheme().getName());
 
-        List<MenuItem> rootItems = getSortedRootMenuItems(loadedUser);
-        List<Menu> subMenus = getSubMenus(user);
+            List<MenuItem> rootItems = getSortedRootMenuItems(loadedUser);
+            List<Menu> subMenus = getSubMenus(loadedUser);
 
-        if (rootItems.isEmpty()) {
-            System.out.println("Közvetlen alkalmazások: nincsenek");
-        } else {
-            printMenuItems("Közvetlen alkalmazások:", rootItems);
-        }
+            if (rootItems.isEmpty()) {
+                System.out.println("Közvetlen alkalmazások: nincsenek");
+            } else {
+                printMenuItems("Közvetlen alkalmazások:", rootItems);
+            }
 
-        if (subMenus.isEmpty()) {
-            System.out.println("Almenük: nincsenek");
-        } else {
-            printMenus(subMenus);
-        }
+            if (subMenus.isEmpty()) {
+                System.out.println("Almenük: nincsenek");
+            } else {
+                printMenus(subMenus);
+            }
+        });
     }
 
     private void listSubMenus(UserAccount user) {
-        List<Menu> subMenus = getSubMenus(user);
+        inTransaction(() -> {
+            List<Menu> subMenus = getSubMenus(user);
 
-        if (subMenus.isEmpty()) {
-            System.out.println("Nincs még almenü.");
-            return;
-        }
+            if (subMenus.isEmpty()) {
+                System.out.println("Nincs még almenü.");
+                return;
+            }
 
-        printMenus(subMenus);
+            printMenus(subMenus);
+        });
     }
 
     private void createSubMenu(Scanner scanner, UserAccount user) {
@@ -128,9 +137,12 @@ public class UserSessionCli {
     }
 
     private void deleteSubMenu(Scanner scanner, UserAccount user) {
-        List<Menu> subMenus = getSubMenus(user);
+        AtomicReference<List<Menu>> subMenusRef = new AtomicReference<>();
 
-        if (subMenus.isEmpty()) {
+        inTransaction(() -> subMenusRef.set(getSubMenus(user)));
+        List<Menu> subMenus = subMenusRef.get();
+
+        if (subMenus == null || subMenus.isEmpty()) {
             System.out.println("Nincs törölhető almenü.");
             return;
         }
@@ -143,8 +155,15 @@ public class UserSessionCli {
         }
 
         try {
-            Menu loadedSubMenu = menuManagementService.findSubMenuWithItems(selectedSubMenu.getId());
-            int itemCount = loadedSubMenu.getMenuItems() == null ? 0 : loadedSubMenu.getMenuItems().size();
+            AtomicReference<Integer> itemCountRef = new AtomicReference<>(0);
+
+            inTransaction(() -> {
+                Menu loadedSubMenu = menuManagementService.findSubMenuWithItems(selectedSubMenu.getId());
+                int itemCount = loadedSubMenu.getMenuItems() == null ? 0 : loadedSubMenu.getMenuItems().size();
+                itemCountRef.set(itemCount);
+            });
+
+            int itemCount = itemCountRef.get();
 
             if (itemCount > 0) {
                 System.out.println("Az almenü " + itemCount + " alkalmazást tartalmaz.");
@@ -165,9 +184,12 @@ public class UserSessionCli {
     }
 
     private void openSubMenu(Scanner scanner, UserAccount user) {
-        List<Menu> subMenus = getSubMenus(user);
+        AtomicReference<List<Menu>> subMenusRef = new AtomicReference<>();
 
-        if (subMenus.isEmpty()) {
+        inTransaction(() -> subMenusRef.set(getSubMenus(user)));
+        List<Menu> subMenus = subMenusRef.get();
+
+        if (subMenus == null || subMenus.isEmpty()) {
             System.out.println("Nincs megnyitható almenü.");
             return;
         }
@@ -192,10 +214,7 @@ public class UserSessionCli {
 
         printApplications(applications);
 
-        SmartApplication selectedApplication = selectApplicationByIndex(
-                scanner,
-                applications
-        );
+        SmartApplication selectedApplication = selectApplicationByIndex(scanner, applications);
 
         if (selectedApplication == null) {
             return;
@@ -275,10 +294,7 @@ public class UserSessionCli {
 
         printWallpapers(wallpapers);
 
-        Wallpaper selectedWallpaper = selectWallpaperByIndex(
-                scanner,
-                wallpapers
-        );
+        Wallpaper selectedWallpaper = selectWallpaperByIndex(scanner, wallpapers);
 
         if (selectedWallpaper == null) {
             return;
@@ -302,10 +318,7 @@ public class UserSessionCli {
 
         printThemes(themes);
 
-        Theme selectedTheme = selectThemeByIndex(
-                scanner,
-                themes
-        );
+        Theme selectedTheme = selectThemeByIndex(scanner, themes);
 
         if (selectedTheme == null) {
             return;
@@ -464,5 +477,9 @@ public class UserSessionCli {
             System.out.println("Kérlek számot adj meg.");
             return null;
         }
+    }
+
+    private void inTransaction(Runnable action) {
+        transactionTemplate.executeWithoutResult(status -> action.run());
     }
 }

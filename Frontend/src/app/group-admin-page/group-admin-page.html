@@ -1,0 +1,44 @@
+<div class="page">
+  <div class="page-header">
+    <h1>Group Admin</h1>
+    <div class="button-row">
+      <button (click)="openMyMenu()">Open my menu</button>
+      <button (click)="goBack()">Back</button>
+    </div>
+  </div>
+
+  <section class="card">
+    <h2>Create User</h2>
+
+    <div class="form-grid">
+      <input [(ngModel)]="createRequest.name" placeholder="User name" />
+      <input [(ngModel)]="createRequest.password" placeholder="Password" type="password" />
+    </div>
+
+    <button (click)="createUser()">Create user</button>
+  </section>
+
+  <section class="card">
+    <h2>Group Users</h2>
+
+    <div><strong>Group ID:</strong> {{ groupId }}</div>
+    <br />
+
+    <div *ngIf="loading">Loading...</div>
+    <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+
+    <ul *ngIf="!loading && users.length > 0" class="user-list">
+      <li *ngFor="let user of users" class="user-item">
+        <div>
+          <strong>{{ user.name }}</strong> — {{ user.role }} — {{ user.id }}
+        </div>
+
+        <button (click)="deleteUser(user.id!, user.role!)">Delete</button>
+      </li>
+    </ul>
+
+    <div *ngIf="!loading && users.length === 0">
+      No users found.
+    </div>
+  </section>
+</div>

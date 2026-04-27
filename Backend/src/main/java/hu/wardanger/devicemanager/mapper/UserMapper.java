@@ -1,6 +1,6 @@
 package hu.wardanger.devicemanager.mapper;
 
-import hu.wardanger.devicemanager.dto.response.UserSummaryResponse;
+import hu.wardanger.devicemanager.models.response.UserSummaryResponse;
 import hu.wardanger.devicemanager.entity.UserAccount;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

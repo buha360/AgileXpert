@@ -1,0 +1,774 @@
+openapi: 3.0.3
+
+info:
+  title: Device Manager API
+  version: 1.0.0
+  description: >
+    REST API for managing groups, users, menus, applications,
+    wallpapers and themes in the Device Manager system.
+  contact:
+    name: Milán Buha
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+tags:
+  - name: Groups
+    description: Operations related to user groups and group access
+  - name: Users
+    description: Operations related to users inside groups
+  - name: Menus
+    description: Operations related to root menus, submenus and applications
+  - name: Customization
+    description: Operations related to wallpapers and themes
+
+paths:
+  /api/groups:
+    get:
+      tags:
+        - Groups
+      summary: List all groups
+      operationId: getAllGroups
+      responses:
+        '200':
+          description: Groups returned successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GroupSummaryResponse'
+
+    post:
+      tags:
+        - Groups
+      summary: Create a new group
+      operationId: createGroup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGroupRequest'
+      responses:
+        '201':
+          description: Group created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupSummaryResponse'
+
+  /api/groups/{groupId}/users:
+    get:
+      tags:
+        - Users
+      summary: List users in a group
+      operationId: getUsersByGroup
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          description: Unique identifier of the group
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Users returned successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserSummaryResponse'
+
+    post:
+      tags:
+        - Users
+      summary: Create a new user in a group
+      operationId: createUser
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          description: Unique identifier of the group
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSummaryResponse'
+
+  /api/groups/{groupId}/users/{userId}:
+    delete:
+      tags:
+        - Users
+      summary: Delete a user from a group
+      operationId: deleteUser
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          description: Unique identifier of the group
+          schema:
+            type: string
+        - name: userId
+          in: path
+          required: true
+          description: Unique identifier of the user
+          schema:
+            type: string
+      responses:
+        '204':
+          description: User deleted successfully
+
+  /api/groups/{groupId}/users/{userId}/login:
+    post:
+      tags:
+        - Users
+      summary: Authenticate a user
+      operationId: loginUser
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          description: Unique identifier of the group
+          schema:
+            type: string
+        - name: userId
+          in: path
+          required: true
+          description: Unique identifier of the user
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLoginRequest'
+      responses:
+        '200':
+          description: User authenticated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSummaryResponse'
+
+  /api/groups/{groupId}/access-validation:
+    post:
+      tags:
+        - Groups
+      summary: Validate group access code
+      operationId: validateAccessCode
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          description: Unique identifier of the group
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidateGroupAccessRequest'
+      responses:
+        '200':
+          description: Access code validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupAccessValidationResponse'
+
+  /api/users/{userId}/menu:
+    get:
+      tags:
+        - Menus
+      summary: Get user's root menu
+      operationId: getRootMenu
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: Unique identifier of the user
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Root menu returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RootMenuResponse'
+
+  /api/users/{userId}/menu/applications:
+    post:
+      tags:
+        - Menus
+      summary: Add application to root menu
+      operationId: addApplicationToRootMenu
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: Unique identifier of the user
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddApplicationRequest'
+      responses:
+        '201':
+          description: Application added successfully
+
+  /api/users/{userId}/menu/applications/{menuItemId}:
+    delete:
+      tags:
+        - Menus
+      summary: Remove application from root menu
+      operationId: removeApplicationFromRootMenu
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: Unique identifier of the user
+          schema:
+            type: string
+        - name: menuItemId
+          in: path
+          required: true
+          description: Unique identifier of the menu item
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Application removed successfully
+
+  /api/users/{userId}/menu/applications/{menuItemId}/launch:
+    post:
+      tags:
+        - Menus
+      summary: Launch application from root menu
+      operationId: launchApplicationFromRootMenu
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: Unique identifier of the user
+          schema:
+            type: string
+        - name: menuItemId
+          in: path
+          required: true
+          description: Unique identifier of the menu item
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Application launched successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LaunchResponse'
+
+  /api/users/{userId}/submenus:
+    get:
+      tags:
+        - Menus
+      summary: List user's submenus
+      operationId: getSubMenus
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: Unique identifier of the user
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Submenus returned successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubMenuResponse'
+
+    post:
+      tags:
+        - Menus
+      summary: Create submenu
+      operationId: createSubMenu
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: Unique identifier of the user
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSubMenuRequest'
+      responses:
+        '201':
+          description: Submenu created successfully
+
+  /api/users/{userId}/submenus/{submenuId}:
+    delete:
+      tags:
+        - Menus
+      summary: Delete submenu
+      operationId: deleteSubMenu
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: Unique identifier of the user
+          schema:
+            type: string
+        - name: submenuId
+          in: path
+          required: true
+          description: Unique identifier of the submenu
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Submenu deleted successfully
+
+  /api/submenus/{submenuId}:
+    get:
+      tags:
+        - Menus
+      summary: Get submenu details
+      operationId: getSubMenu
+      parameters:
+        - name: submenuId
+          in: path
+          required: true
+          description: Unique identifier of the submenu
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Submenu returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RootMenuResponse'
+
+  /api/submenus/{submenuId}/applications:
+    post:
+      tags:
+        - Menus
+      summary: Add application to submenu
+      operationId: addApplicationToSubMenu
+      parameters:
+        - name: submenuId
+          in: path
+          required: true
+          description: Unique identifier of the submenu
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddApplicationRequest'
+      responses:
+        '201':
+          description: Application added successfully
+
+  /api/submenus/{submenuId}/applications/{menuItemId}:
+    delete:
+      tags:
+        - Menus
+      summary: Remove application from submenu
+      operationId: removeApplicationFromSubMenu
+      parameters:
+        - name: submenuId
+          in: path
+          required: true
+          description: Unique identifier of the submenu
+          schema:
+            type: string
+        - name: menuItemId
+          in: path
+          required: true
+          description: Unique identifier of the menu item
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Application removed successfully
+
+  /api/submenus/{submenuId}/applications/{menuItemId}/launch:
+    post:
+      tags:
+        - Menus
+      summary: Launch application from submenu
+      operationId: launchSubMenuApplication
+      parameters:
+        - name: submenuId
+          in: path
+          required: true
+          description: Unique identifier of the submenu
+          schema:
+            type: string
+        - name: menuItemId
+          in: path
+          required: true
+          description: Unique identifier of the menu item
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Application launched successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LaunchResponse'
+
+  /api/customization/wallpapers:
+    get:
+      tags:
+        - Customization
+      summary: List available wallpapers
+      operationId: getAllWallpapers
+      responses:
+        '200':
+          description: Wallpapers returned successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WallpaperResponse'
+
+  /api/customization/themes:
+    get:
+      tags:
+        - Customization
+      summary: List available themes
+      operationId: getAllThemes
+      responses:
+        '200':
+          description: Themes returned successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ThemeResponse'
+
+  /api/users/{userId}/wallpaper:
+    put:
+      tags:
+        - Customization
+      summary: Select wallpaper for user
+      operationId: selectWallpaper
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: Unique identifier of the user
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SelectWallpaperRequest'
+      responses:
+        '204':
+          description: Wallpaper selected successfully
+
+  /api/users/{userId}/theme:
+    put:
+      tags:
+        - Customization
+      summary: Select theme for user
+      operationId: selectTheme
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: Unique identifier of the user
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SelectThemeRequest'
+      responses:
+        '204':
+          description: Theme selected successfully
+
+components:
+  schemas:
+    CreateGroupRequest:
+      type: object
+      description: Request body for creating a new group with its initial admin user
+      required:
+        - groupName
+        - accessCode
+        - adminUserName
+        - adminPassword
+      properties:
+        groupName:
+          type: string
+          description: Name of the group
+          example: Buha Family
+        accessCode:
+          type: string
+          description: Access code used to enter the group
+          example: asd
+        adminUserName:
+          type: string
+          description: Name of the initial admin user
+          example: Buha
+        adminPassword:
+          type: string
+          description: Password of the initial admin user
+          example: asd
+
+    CreateUserRequest:
+      type: object
+      description: Request body for creating a new user inside a group
+      required:
+        - name
+        - password
+      properties:
+        name:
+          type: string
+          description: Name of the new user
+          example: Niki
+        password:
+          type: string
+          description: Password of the new user
+          example: asd
+
+    CreateSubMenuRequest:
+      type: object
+      description: Request body for creating a new submenu
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Name of the submenu
+          example: Games
+
+    AddApplicationRequest:
+      type: object
+      description: Request body for adding an application to a menu or submenu
+      required:
+        - applicationId
+      properties:
+        applicationId:
+          type: string
+          description: Identifier of the application to add
+          example: app-openmap
+
+    UserLoginRequest:
+      type: object
+      description: Request body for authenticating a user
+      required:
+        - password
+      properties:
+        password:
+          type: string
+          description: User password
+          example: asd
+
+    ValidateGroupAccessRequest:
+      type: object
+      description: Request body for validating a group's access code
+      required:
+        - accessCode
+      properties:
+        accessCode:
+          type: string
+          description: Access code of the group
+          example: asd
+
+    SelectWallpaperRequest:
+      type: object
+      description: Request body for selecting a wallpaper for a user
+      required:
+        - wallpaperId
+      properties:
+        wallpaperId:
+          type: string
+          description: Identifier of the selected wallpaper
+          example: wallpaper-mountain
+
+    SelectThemeRequest:
+      type: object
+      description: Request body for selecting a theme for a user
+      required:
+        - themeId
+      properties:
+        themeId:
+          type: string
+          description: Identifier of the selected theme
+          example: theme-dark
+
+    GroupSummaryResponse:
+      type: object
+      description: Short summary of a group
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the group
+          example: group-buha-family
+        name:
+          type: string
+          description: Name of the group
+          example: Buha Family
+
+    UserSummaryResponse:
+      type: object
+      description: Short summary of a user
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the user
+          example: user-buha-admin
+        name:
+          type: string
+          description: Name of the user
+          example: Buha
+        role:
+          type: string
+          description: Role of the user
+          example: ADMIN
+
+    GroupAccessValidationResponse:
+      type: object
+      description: Result of validating a group's access code
+      properties:
+        valid:
+          type: boolean
+          description: Whether the provided access code is valid
+          example: true
+        message:
+          type: string
+          description: Validation result message
+          example: Az access code helyes.
+
+    LaunchResponse:
+      type: object
+      description: Response returned after launching an application
+      properties:
+        message:
+          type: string
+          description: Launch result message
+          example: "Alkalmazás elindítva: Paint"
+
+    MenuItemResponse:
+      type: object
+      description: Represents an application item displayed in a menu
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the menu item
+          example: menu-item-1
+        name:
+          type: string
+          description: Display name of the menu item
+          example: Paint
+        positionIndex:
+          type: integer
+          format: int32
+          description: Position index of the item inside the menu
+          example: 1
+
+    SubMenuResponse:
+      type: object
+      description: Short summary of a submenu
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the submenu
+          example: submenu-games
+        name:
+          type: string
+          description: Name of the submenu
+          example: Games
+
+    RootMenuResponse:
+      type: object
+      description: Detailed representation of a user's root menu or submenu
+      properties:
+        menuName:
+          type: string
+          description: Name of the menu
+          example: Buha főmenüje
+        wallpaperName:
+          type: string
+          nullable: true
+          description: Currently selected wallpaper name
+          example: Mountain
+        themeName:
+          type: string
+          nullable: true
+          description: Currently selected theme name
+          example: Dark
+        applications:
+          type: array
+          description: Applications displayed directly in the menu
+          items:
+            $ref: '#/components/schemas/MenuItemResponse'
+        subMenus:
+          type: array
+          description: Submenus accessible from the root menu
+          items:
+            $ref: '#/components/schemas/SubMenuResponse'
+
+    WallpaperResponse:
+      type: object
+      description: Represents an available wallpaper
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the wallpaper
+          example: wallpaper-mountain
+        name:
+          type: string
+          description: Name of the wallpaper
+          example: Mountain
+
+    ThemeResponse:
+      type: object
+      description: Represents an available theme
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the theme
+          example: theme-dark
+        name:
+          type: string
+          description: Name of the theme
+          example: Dark

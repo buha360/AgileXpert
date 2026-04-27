@@ -8,7 +8,6 @@ import hu.wardanger.devicemanager.repository.MenuItemRepository;
 import hu.wardanger.devicemanager.repository.MenuRepository;
 import hu.wardanger.devicemanager.repository.SmartApplicationRepository;
 import hu.wardanger.devicemanager.repository.UserAccountRepository;
-import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,15 +43,8 @@ public class MenuManagementService {
 
     @Transactional(readOnly = true)
     public UserAccount findUserWithRootMenuItems(String userId) {
-        UserAccount user = userAccountRepository.findDetailedById(userId)
+        return userAccountRepository.findDetailedById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Nincs ilyen felhasználó."));
-
-        if (user.getRootMenu() != null) {
-            Hibernate.initialize(user.getRootMenu().getMenuItems());
-            Hibernate.initialize(user.getRootMenu().getChildMenus());
-        }
-
-        return user;
     }
 
     @Transactional(readOnly = true)
@@ -83,8 +75,6 @@ public class MenuManagementService {
         SmartApplication application = smartApplicationRepository.findById(applicationId)
                 .orElseThrow(() -> new IllegalArgumentException("Nincs ilyen alkalmazás."));
 
-        Hibernate.initialize(rootMenu.getMenuItems());
-
         boolean alreadyExists = rootMenu.getMenuItems().stream()
                 .anyMatch(item -> item.getApplication() != null
                         && item.getApplication().getId().equals(applicationId));
@@ -114,8 +104,6 @@ public class MenuManagementService {
         if (rootMenu == null) {
             throw new IllegalArgumentException("A felhasználóhoz nem tartozik főmenü.");
         }
-
-        Hibernate.initialize(rootMenu.getMenuItems());
 
         MenuItem menuItem = rootMenu.getMenuItems().stream()
                 .filter(item -> item.getId().equals(menuItemId))
@@ -175,8 +163,6 @@ public class MenuManagementService {
             throw new IllegalArgumentException("A felhasználóhoz nem tartozik főmenü.");
         }
 
-        Hibernate.initialize(rootMenu.getChildMenus());
-
         boolean alreadyExists = rootMenu.getChildMenus().stream()
                 .anyMatch(menu -> menu.getName().equalsIgnoreCase(submenuName));
 
@@ -202,14 +188,10 @@ public class MenuManagementService {
             throw new IllegalArgumentException("A felhasználóhoz nem tartozik főmenü.");
         }
 
-        Hibernate.initialize(rootMenu.getChildMenus());
-
         Menu subMenu = rootMenu.getChildMenus().stream()
                 .filter(menu -> menu.getId().equals(submenuId))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Nincs ilyen almenü."));
-
-        Hibernate.initialize(subMenu.getMenuItems());
 
         if (!subMenu.getMenuItems().isEmpty()) {
             menuItemRepository.deleteAll(subMenu.getMenuItems());
@@ -221,12 +203,8 @@ public class MenuManagementService {
 
     @Transactional(readOnly = true)
     public Menu findSubMenuWithItems(String submenuId) {
-        Menu subMenu = menuRepository.findById(submenuId)
+        return menuRepository.findById(submenuId)
                 .orElseThrow(() -> new IllegalArgumentException("Nincs ilyen almenü."));
-
-        Hibernate.initialize(subMenu.getMenuItems());
-
-        return subMenu;
     }
 
     @Transactional
@@ -236,8 +214,6 @@ public class MenuManagementService {
 
         SmartApplication application = smartApplicationRepository.findById(applicationId)
                 .orElseThrow(() -> new IllegalArgumentException("Nincs ilyen alkalmazás."));
-
-        Hibernate.initialize(subMenu.getMenuItems());
 
         boolean alreadyExists = subMenu.getMenuItems().stream()
                 .anyMatch(item -> item.getApplication() != null
@@ -263,8 +239,6 @@ public class MenuManagementService {
     public void removeApplicationFromSubMenu(String submenuId, String menuItemId) {
         Menu subMenu = menuRepository.findById(submenuId)
                 .orElseThrow(() -> new IllegalArgumentException("Nincs ilyen almenü."));
-
-        Hibernate.initialize(subMenu.getMenuItems());
 
         MenuItem menuItem = subMenu.getMenuItems().stream()
                 .filter(item -> item.getId().equals(menuItemId))
