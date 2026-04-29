@@ -12,6 +12,7 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface MenuMapper {
 
+    @Mapping(source = "application.name", target = "name")
     MenuItemResponse toMenuItemResponse(MenuItem menuItem);
 
     List<MenuItemResponse> toMenuItemResponseList(List<MenuItem> menuItems);

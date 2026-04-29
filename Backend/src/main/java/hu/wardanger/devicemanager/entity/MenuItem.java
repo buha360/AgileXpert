@@ -1,5 +1,6 @@
 package hu.wardanger.devicemanager.entity;
 
+import hu.wardanger.devicemanager.generated.model.CreateSubMenuRequest;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
