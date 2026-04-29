@@ -24,7 +24,7 @@ export class GroupLoginPageComponent implements OnInit {
   loading = false;
   errorMessage = '';
 
-  selectedUserId = '';
+  selectedUser: UserSummaryResponse | null = null;
   password = '';
   loginErrorMessage = '';
 
@@ -55,15 +55,20 @@ export class GroupLoginPageComponent implements OnInit {
     });
   }
 
-  selectUser(userId: string): void {
-    this.selectedUserId = userId;
+  selectUser(user: UserSummaryResponse): void {
+    this.selectedUser = user;
     this.password = '';
     this.loginErrorMessage = '';
   }
 
-  login(): void {
-    if (!this.groupId || !this.selectedUserId) {
+  loginUser(): void {
+    if (!this.groupId || !this.selectedUser?.id) {
       this.loginErrorMessage = 'Please select a user.';
+      return;
+    }
+
+    if (!this.password.trim()) {
+      this.loginErrorMessage = 'Please enter a password.';
       return;
     }
 
@@ -71,7 +76,7 @@ export class GroupLoginPageComponent implements OnInit {
       password: this.password
     };
 
-    this.usersService.loginUser(this.groupId, this.selectedUserId, request).subscribe({
+    this.usersService.loginUser(this.groupId, this.selectedUser.id, request).subscribe({
       next: (authenticatedUser) => {
         this.loginErrorMessage = '';
 
@@ -92,7 +97,17 @@ export class GroupLoginPageComponent implements OnInit {
     });
   }
 
+  cancelUserSelection(): void {
+    this.selectedUser = null;
+    this.password = '';
+    this.loginErrorMessage = '';
+  }
+
   goBack(): void {
     this.router.navigate(['/groups']);
+  }
+
+  trackById(_: number, item: { id?: string | null }): string {
+    return item.id ?? Math.random().toString();
   }
 }

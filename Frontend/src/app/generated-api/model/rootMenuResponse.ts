@@ -14,7 +14,8 @@ import { SubMenuResponse } from './subMenuResponse';
 /**
  * Detailed representation of a user\'s root menu or submenu
  */
-export interface RootMenuResponse { 
+export interface RootMenuResponse {
+    id: string | undefined; 
     /**
      * Name of the menu
      */

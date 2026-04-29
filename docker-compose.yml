@@ -1,3 +1,4 @@
+name: oracle
 services:
   oracle-free:
     image: gvenzl/oracle-free:23-slim

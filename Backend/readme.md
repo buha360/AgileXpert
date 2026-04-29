@@ -90,6 +90,8 @@ Profile-specific datasource settings are stored in:
 
 ### Run with H2
 
+`mvn spring-boot:run`
+or
 `mvn spring-boot:run -Ph2`
 
 ### Run with PostgreSQL
@@ -102,19 +104,15 @@ Profile-specific datasource settings are stored in:
 
 ## Docker Compose
 
-A PostgreSQL database can be started with Docker Compose.
+A PostgreSQL and Oracle database can be started with Docker Compose.
+
+### Start OracleDB
+
+`docker compose up -d`
 
 ### Start PostgreSQL
 
 `docker compose -f docker-compose-postgres.yml up -d`
-
-### Stop PostgreSQL
-
-`docker compose -f docker-compose-postgres.yml down`
-
-### Stop and remove volumes as well
-
-`docker compose -f docker-compose-postgres.yml down -v`
 
 ## Swagger / OpenAPI
 

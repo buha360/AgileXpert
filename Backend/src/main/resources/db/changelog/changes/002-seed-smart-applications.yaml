@@ -9,7 +9,7 @@ databaseChangeLog:
               - column: { name: id, value: app-minesweeper }
               - column: { name: name, value: Minesweeper }
               - column: { name: type, value: GAME }
-              - column: { name: launch_message, value: Aknakeresö alkalmazás elindult. }
+              - column: { name: launch_message, value: Minesweeper application launched. }
 
         - insert:
             tableName: smart_application
@@ -17,7 +17,7 @@ databaseChangeLog:
               - column: { name: id, value: app-openmap }
               - column: { name: name, value: OpenMap }
               - column: { name: type, value: NAVIGATION }
-              - column: { name: launch_message, value: OpenMap alkalmazás elindult. }
+              - column: { name: launch_message, value: OpenMap application launched. }
 
         - insert:
             tableName: smart_application
@@ -25,7 +25,7 @@ databaseChangeLog:
               - column: { name: id, value: app-paint }
               - column: { name: name, value: Paint }
               - column: { name: type, value: PRODUCTIVITY }
-              - column: { name: launch_message, value: Paint alkalmazás elindult. }
+              - column: { name: launch_message, value: Paint application launched. }
 
         - insert:
             tableName: smart_application
@@ -33,4 +33,4 @@ databaseChangeLog:
               - column: { name: id, value: app-contacts }
               - column: { name: name, value: Contacts }
               - column: { name: type, value: UTILITY }
-              - column: { name: launch_message, value: Címtár alkalmazás elindult. }
+              - column: { name: launch_message, value: Contacts application launched. }

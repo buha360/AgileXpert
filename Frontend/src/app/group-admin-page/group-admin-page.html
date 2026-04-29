@@ -1,44 +1,132 @@
-<div class="page">
-  <div class="page-header">
-    <h1>Group Admin</h1>
-    <div class="button-row">
-      <button (click)="openMyMenu()">Open my menu</button>
-      <button (click)="goBack()">Back</button>
+<div class="group-admin-page">
+  <div class="group-admin-header">
+    <div>
+      <h1>Group Admin</h1>
+      <p>Manage users inside the selected group.</p>
+    </div>
+
+    <div class="header-actions">
+      <button class="secondary-button" type="button" (click)="openMyMenu()">
+        Open My Menu
+      </button>
+
+      <button class="ghost-button" type="button" (click)="goBack()">
+        Back
+      </button>
     </div>
   </div>
 
-  <section class="card">
-    <h2>Create User</h2>
+  <section class="panel create-user-panel">
+    <div class="panel-header">
+      <h2>Create User</h2>
+      <p>Create a new member account inside this group.</p>
+    </div>
 
     <div class="form-grid">
-      <input [(ngModel)]="createRequest.name" placeholder="User name" />
-      <input [(ngModel)]="createRequest.password" placeholder="Password" type="password" />
+      <input
+        class="app-input"
+        type="text"
+        placeholder="Username"
+        [value]="createRequest.name"
+        (input)="createRequest.name = $any($event.target).value"
+      />
+
+      <input
+        class="app-input"
+        type="password"
+        placeholder="Password"
+        [value]="createRequest.password"
+        (input)="createRequest.password = $any($event.target).value"
+      />
     </div>
 
-    <button (click)="createUser()">Create user</button>
+    <div class="panel-actions">
+      <button
+        class="primary-button"
+        type="button"
+        (click)="createUser()"
+        [disabled]="!isCreateUserFormValid()"
+      >
+        Create User
+      </button>
+    </div>
   </section>
 
-  <section class="card">
-    <h2>Group Users</h2>
+  <section class="panel users-panel">
+    <div class="panel-header">
+      <h2>Group Users</h2>
+      <p>Manage the users belonging to this group.</p>
+    </div>
 
-    <div><strong>Group ID:</strong> {{ groupId }}</div>
-    <br />
+    <div class="selected-group-box">
+      <span class="selected-group-label">Group ID</span>
+      <span class="selected-group-name">{{ groupId }}</span>
+    </div>
 
-    <div *ngIf="loading">Loading...</div>
-    <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+    <div class="state-message" *ngIf="loading">
+      Loading users...
+    </div>
 
-    <ul *ngIf="!loading && users.length > 0" class="user-list">
-      <li *ngFor="let user of users" class="user-item">
-        <div>
-          <strong>{{ user.name }}</strong> — {{ user.role }} — {{ user.id }}
+    <div class="state-message error" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </div>
+
+    <div class="users-list" *ngIf="!loading && users.length > 0">
+      <div class="user-row" *ngFor="let user of users; trackBy: trackById">
+        <div class="user-row-left">
+          <div class="user-icon">👤</div>
+
+          <div class="user-info">
+            <div class="user-name">{{ user.name }}</div>
+            <div class="user-meta">
+              <span class="user-role">{{ user.role }}</span>
+              <span class="user-id" *ngIf="user.id">{{ user.id }}</span>
+            </div>
+          </div>
         </div>
 
-        <button (click)="deleteUser(user.id!, user.role!)">Delete</button>
-      </li>
-    </ul>
+        <button
+          class="danger-button"
+          type="button"
+          (click)="requestDeleteUser(user)"
+          [disabled]="user.role === 'ADMIN'"
+          [class.danger-button-disabled]="user.role === 'ADMIN'"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
 
-    <div *ngIf="!loading && users.length === 0">
-      No users found.
+    <div class="empty-state" *ngIf="!loading && users.length === 0">
+      No users found in this group.
     </div>
   </section>
+</div>
+
+<div
+  class="modal-backdrop"
+  *ngIf="isDeleteUserModalOpen"
+  (click)="closeDeleteUserModal()"
+>
+  <div class="modal-window confirm-modal-window" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Delete User</h3>
+      <button type="button" class="modal-close" (click)="closeDeleteUserModal()">✕</button>
+    </div>
+
+    <p class="modal-subtitle">
+      Do you really want to delete
+      <strong>"{{ userPendingDeletion?.name }}"</strong>?
+    </p>
+
+    <div class="confirm-actions">
+      <button type="button" class="modal-secondary-button" (click)="closeDeleteUserModal()">
+        Cancel
+      </button>
+
+      <button type="button" class="modal-danger-button" (click)="confirmDeleteUser()">
+        Delete User
+      </button>
+    </div>
+  </div>
 </div>

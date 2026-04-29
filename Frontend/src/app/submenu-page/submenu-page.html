@@ -1,0 +1,103 @@
+<div
+  class="desktop-shell"
+  [ngClass]="getThemeClass(rootMenu?.themeName)"
+  [style.background-image]="'url(' + getWallpaperUrl(rootMenu?.wallpaperName) + ')'"
+>
+  <div class="desktop-overlay">
+    <div class="submenu-page">
+      <div class="submenu-header">
+        <div>
+          <h1>{{ getDisplaySubmenuName(submenu?.menuName) }}</h1>
+          <p>Applications inside this folder</p>
+        </div>
+
+        <button type="button" class="back-button" (click)="goBack()">Back</button>
+      </div>
+
+      <section class="submenu-panel">
+        <div class="section-title">Folder Applications</div>
+
+        <div class="app-grid">
+        <button
+        class="app-tile"
+        *ngFor="let app of getSubmenuApplications(); trackBy: trackByFavoriteApp"
+        draggable="true"
+        (click)="launchApplication(app)"
+        (dragstart)="onAppDragStart(app)"
+        (dragend)="onAppDragEnd()"
+        type="button"
+        >
+            <div class="app-icon">{{ app.icon }}</div>
+            <div class="app-name">{{ app.name }}</div>
+          </button>
+
+          <button class="app-tile app-tile-add" type="button" (click)="openAddAppModal()">
+            <div class="app-icon app-icon-add">+</div>
+            <div class="app-name">Add</div>
+          </button>
+        </div>
+      </section>
+
+      <div class="page-state" *ngIf="loading">Loading...</div>
+      <div class="page-state error" *ngIf="errorMessage">{{ errorMessage }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" *ngIf="isAddAppModalOpen" (click)="closeAddAppModal()">
+  <div class="modal-window" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Add Application to Folder</h3>
+      <button type="button" class="modal-close" (click)="closeAddAppModal()">✕</button>
+    </div>
+
+    <p class="modal-subtitle">
+      Only applications not used elsewhere are shown here.
+    </p>
+
+    <div class="modal-app-list" *ngIf="getAvailableApplicationsToAdd().length > 0; else noAppsToAdd">
+      <button
+        class="modal-app-item"
+        type="button"
+        *ngFor="let app of getAvailableApplicationsToAdd(); trackBy: trackByAvailableApp"
+        (click)="addApplicationToSubmenu(app)"
+      >
+        <span class="modal-app-icon">{{ app.icon }}</span>
+        <span class="modal-app-name">{{ app.name }}</span>
+      </button>
+    </div>
+
+    <ng-template #noAppsToAdd>
+      <div class="modal-empty-state">
+        No more applications can be added here.
+      </div>
+    </ng-template>
+  </div>
+</div>
+
+<div
+  class="trash-drop-zone"
+  *ngIf="isTrashVisible"
+  [class.trash-drop-zone-hover]="isTrashHover"
+  (dragover)="onTrashDragOver($event)"
+  (dragleave)="onTrashDragLeave()"
+  (drop)="onTrashDrop($event)"
+>
+  <div class="trash-circle">✕</div>
+  <div class="trash-label">Drop here to remove</div>
+</div>
+
+<div class="modal-backdrop" *ngIf="isLaunchModalOpen" (click)="closeLaunchModal()">
+  <div class="modal-window" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Application Launch</h3>
+      <button type="button" class="modal-close" (click)="closeLaunchModal()">✕</button>
+    </div>
+
+    <p class="modal-subtitle">{{ launchMessage }}</p>
+
+    <div class="modal-actions">
+      <button type="button" class="modal-primary-button" (click)="closeLaunchModal()">OK</button>
+    </div>
+  </div>
+</div>

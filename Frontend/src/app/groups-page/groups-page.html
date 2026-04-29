@@ -1,55 +1,127 @@
-<div class="page">
-  <h1>Groups</h1>
+<div class="groups-page">
+  <div class="groups-page-header">
+    <h1>Groups</h1>
+    <p>Create a new group or enter an existing one.</p>
+  </div>
 
-  <section class="card">
-    <h2>Create Group</h2>
-
-    <div class="form-grid">
-      <input [(ngModel)]="createRequest.groupName" placeholder="Group name" />
-      <input [(ngModel)]="createRequest.accessCode" placeholder="Access code" />
-      <input [(ngModel)]="createRequest.adminUserName" placeholder="Admin username" />
-      <input [(ngModel)]="createRequest.adminPassword" placeholder="Admin password" type="password" />
+  <section class="panel create-panel">
+    <div class="panel-header">
+      <h2>Create Group</h2>
+      <p>Set up a new group with an admin account.</p>
     </div>
 
-    <button (click)="createGroup()">Create group</button>
+    <div class="form-grid">
+      <input
+        class="app-input"
+        type="text"
+        placeholder="Group name"
+        [value]="createRequest.groupName"
+        (input)="createRequest.groupName = $any($event.target).value"
+      />
+
+      <input
+        class="app-input"
+        type="text"
+        placeholder="Access code"
+        [value]="createRequest.accessCode"
+        (input)="createRequest.accessCode = $any($event.target).value"
+      />
+
+      <input
+        class="app-input"
+        type="text"
+        placeholder="Admin username"
+        [value]="createRequest.adminUserName"
+        (input)="createRequest.adminUserName = $any($event.target).value"
+      />
+
+      <input
+        class="app-input"
+        type="password"
+        placeholder="Admin password"
+        [value]="createRequest.adminPassword"
+        (input)="createRequest.adminPassword = $any($event.target).value"
+      />
+    </div>
+
+    <div class="panel-actions">
+      <button
+        class="primary-button"
+        type="button"
+        (click)="createGroup()"
+        [disabled]="!isCreateGroupFormValid()"
+      >
+        Create Group
+      </button>
+    </div>
   </section>
 
-  <section class="card">
-    <h2>Available Groups</h2>
+  <section class="panel groups-list-panel">
+    <div class="panel-header">
+      <h2>Available Groups</h2>
+      <p>Select a group and continue to login.</p>
+    </div>
 
-    <div *ngIf="loading">Loading...</div>
-    <div *ngIf="errorMessage">{{ errorMessage }}</div>
+    <div class="state-message error" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </div>
 
-    <ul *ngIf="!loading && groups.length > 0" class="group-list">
-      <li *ngFor="let group of groups" class="group-item">
-        <div>
-          <strong>{{ group.name }}</strong> — {{ group.id }}
+    <div class="state-message" *ngIf="loading">
+      Loading groups...
+    </div>
+
+    <div class="groups-list" *ngIf="!loading && groups.length > 0">
+      <div class="group-row" *ngFor="let group of groups; trackBy: trackById">
+        <div class="group-row-left">
+          <div class="group-icon">👥</div>
+          <div class="group-info">
+            <div class="group-name">{{ group.name }}</div>
+            <div class="group-id">{{ group.id }}</div>
+          </div>
         </div>
-        <button (click)="selectGroupForEntry(group.id!)">Enter</button>
-      </li>
-    </ul>
 
-    <div *ngIf="!loading && groups.length === 0">
-      No groups found.
+        <button class="secondary-button" type="button" (click)="openEnterGroup(group)">
+          Enter
+        </button>
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="!loading && groups.length === 0">
+      No groups found yet.
     </div>
   </section>
 
-  <section class="card" *ngIf="selectedGroupId">
-    <h2>Enter Group</h2>
-
-    <div><strong>Selected group ID:</strong> {{ selectedGroupId }}</div>
-
-    <div class="form-grid">
-      <input [(ngModel)]="accessCode" placeholder="Enter access code" type="password" />
+  <section class="panel enter-panel" *ngIf="selectedGroup">
+    <div class="panel-header">
+      <h2>Enter Group</h2>
+      <p>Provide the access code for the selected group.</p>
     </div>
 
-    <div *ngIf="accessErrorMessage" class="error-message">
+    <div class="selected-group-box">
+      <span class="selected-group-label">Selected group</span>
+      <span class="selected-group-name">{{ selectedGroup.name }}</span>
+    </div>
+
+    <input
+      class="app-input"
+      type="password"
+      placeholder="Access code"
+      [value]="accessCode"
+      (input)="accessCode = $any($event.target).value"
+    />
+
+    <div class="state-message error" *ngIf="accessErrorMessage">
       {{ accessErrorMessage }}
     </div>
 
-    <div class="button-row">
-      <button (click)="enterGroup()">Continue</button>
-      <button (click)="cancelEntry()">Cancel</button>
+    <div class="panel-actions">
+      <button class="primary-button" type="button" (click)="continueToGroupLogin()">
+        Continue
+      </button>
+
+      <button class="ghost-button" type="button" (click)="cancelEnterGroup()">
+        Cancel
+      </button>
     </div>
   </section>
 </div>

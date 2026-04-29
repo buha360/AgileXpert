@@ -31,6 +31,9 @@ export class GroupAdminPageComponent implements OnInit {
     password: ''
   };
 
+  isDeleteUserModalOpen = false;
+  userPendingDeletion: UserSummaryResponse | null = null;
+
   ngOnInit(): void {
     this.groupId = this.route.snapshot.paramMap.get('groupId') ?? '';
     this.currentAdminUserId = history.state?.userId ?? '';
@@ -59,11 +62,23 @@ export class GroupAdminPageComponent implements OnInit {
     });
   }
 
+  isCreateUserFormValid(): boolean {
+    return !!this.createRequest.name?.trim()
+      && !!this.createRequest.password?.trim();
+  }
+
   createUser(): void {
     if (!this.groupId) {
       this.errorMessage = 'Missing group id.';
       return;
     }
+
+    if (!this.isCreateUserFormValid()) {
+      this.errorMessage = 'Please fill in all required fields.';
+      return;
+    }
+
+    this.errorMessage = '';
 
     this.usersService.createUser(this.groupId, this.createRequest).subscribe({
       next: () => {
@@ -80,19 +95,25 @@ export class GroupAdminPageComponent implements OnInit {
     });
   }
 
-  deleteUser(userId: string, role?: string): void {
-    if (!this.groupId) {
-      this.errorMessage = 'Missing group id.';
-      return;
-    }
-
-    if (role === 'ADMIN') {
+  requestDeleteUser(user: UserSummaryResponse): void {
+    if (user.role === 'ADMIN') {
       this.errorMessage = 'Admin user cannot be deleted.';
       return;
     }
 
-    this.usersService.deleteUser(this.groupId, userId).subscribe({
+    this.userPendingDeletion = user;
+    this.isDeleteUserModalOpen = true;
+  }
+
+  confirmDeleteUser(): void {
+    if (!this.groupId || !this.userPendingDeletion?.id) {
+      this.errorMessage = 'Missing data for deletion.';
+      return;
+    }
+
+    this.usersService.deleteUser(this.groupId, this.userPendingDeletion.id).subscribe({
       next: () => {
+        this.closeDeleteUserModal();
         this.loadUsers();
       },
       error: (error) => {
@@ -100,6 +121,11 @@ export class GroupAdminPageComponent implements OnInit {
         this.errorMessage = 'Failed to delete user.';
       }
     });
+  }
+
+  closeDeleteUserModal(): void {
+    this.isDeleteUserModalOpen = false;
+    this.userPendingDeletion = null;
   }
 
   openMyMenu(): void {
@@ -115,5 +141,9 @@ export class GroupAdminPageComponent implements OnInit {
 
   goBack(): void {
     this.router.navigate(['/groups', this.groupId, 'login']);
+  }
+
+  trackById(_: number, item: { id?: string | null }): string {
+    return item.id ?? Math.random().toString();
   }
 }

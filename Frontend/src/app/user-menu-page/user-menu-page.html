@@ -56,39 +56,52 @@
       <section class="dock-panel">
         <div class="section-title">Favorite Applications</div>
 
-        <div class="dock" *ngIf="currentMenu.applications?.length; else noApps">
+        <div class="app-grid">
           <button
-            class="dock-icon"
-            *ngFor="let app of currentMenu.applications; trackBy: trackById"
+            class="app-tile"
+            *ngFor="let app of getFavoriteApplications(); trackBy: trackByFavoriteApp"
+            draggable="true"
+            (click)="launchApplication(app)"
+            (dragstart)="onAppDragStart(app)"
+            (dragend)="onAppDragEnd()"
             type="button"
           >
-            <div class="dock-icon-symbol">{{ getAppIcon(app.name) }}</div>
-            <div class="dock-icon-label">{{ app.name }}</div>
+            <div class="app-icon">{{ app.icon }}</div>
+            <div class="app-name">{{ app.name }}</div>
+          </button>
+
+          <button class="app-tile app-tile-add" type="button" (click)="openAddAppModal()">
+            <div class="app-icon app-icon-add">+</div>
+            <div class="app-name">Add</div>
           </button>
         </div>
-
-        <ng-template #noApps>
-          <div class="empty-state">No applications found.</div>
-        </ng-template>
       </section>
 
       <section class="folders-panel">
         <div class="section-title">Folders</div>
 
-        <div class="folders-grid" *ngIf="currentMenu.subMenus?.length; else noFolders">
-          <div
-            class="folder-card"
-            *ngFor="let submenu of currentMenu.subMenus; trackBy: trackById"
+        <div class="folders-grid">
+          <button
+            class="folder-card folder-button"
+            *ngFor="let folder of getFolders(); trackBy: trackById"
+            type="button"
+            draggable="true"
+            (click)="openFolder(folder.id)"
+            (dragstart)="onFolderDragStart(folder)"
+            (dragend)="onFolderDragEnd()"
           >
             <div class="folder-icon">📁</div>
-            <div class="folder-name">{{ submenu.name }}</div>
-            <div class="folder-id">{{ submenu.id }}</div>
-          </div>
-        </div>
+            <div class="folder-name">{{ folder.name }}</div>
+            <div class="folder-meta" *ngIf="folder.applicationCount > 0">
+              {{ folder.applicationCount }} app{{ folder.applicationCount === 1 ? '' : 's' }}
+            </div>
+          </button>
 
-        <ng-template #noFolders>
-          <div class="empty-state">No submenus found.</div>
-        </ng-template>
+          <button class="folder-card folder-card-add" type="button" (click)="openCreateFolderModal()">
+            <div class="folder-icon folder-icon-add">+</div>
+            <div class="folder-name">Create Folder</div>
+          </button>
+        </div>
       </section>
     </main>
   </div>
@@ -96,3 +109,117 @@
 
 <div class="page-state" *ngIf="loading">Loading...</div>
 <div class="page-state error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+<div class="modal-backdrop" *ngIf="isAddAppModalOpen" (click)="closeAddAppModal()">
+  <div class="modal-window" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Add Application</h3>
+      <button type="button" class="modal-close" (click)="closeAddAppModal()">✕</button>
+    </div>
+
+    <p class="modal-subtitle">Select an application to add to favorites.</p>
+
+    <div class="modal-app-list" *ngIf="getAvailableApplicationsToAdd().length > 0; else noAppsToAdd">
+      <button
+        class="modal-app-item"
+        type="button"
+        *ngFor="let app of getAvailableApplicationsToAdd(); trackBy: trackByAvailableApp"
+        (click)="addApplicationToFavorites(app)"
+      >
+        <span class="modal-app-icon">{{ app.icon }}</span>
+        <span class="modal-app-name">{{ app.name }}</span>
+      </button>
+    </div>
+
+    <ng-template #noAppsToAdd>
+      <div class="modal-empty-state">
+        All available applications are already added.
+      </div>
+    </ng-template>
+  </div>
+</div>
+
+<div class="modal-backdrop" *ngIf="isCreateFolderModalOpen" (click)="closeCreateFolderModal()">
+  <div class="modal-window" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Create Folder</h3>
+      <button type="button" class="modal-close" (click)="closeCreateFolderModal()">✕</button>
+    </div>
+
+    <p class="modal-subtitle">Enter a name for the new folder.</p>
+
+    <input
+      class="folder-name-input"
+      type="text"
+      [value]="newFolderName"
+      (input)="newFolderName = ($any($event.target).value)"
+      placeholder="Folder name"
+    />
+
+    <div class="modal-actions">
+      <button type="button" class="modal-primary-button" (click)="createFolder()">
+        Create Folder
+      </button>
+    </div>
+  </div>
+</div>
+
+<div
+  class="trash-drop-zone"
+  *ngIf="isTrashVisible"
+  [class.trash-drop-zone-hover]="isTrashHover"
+  (dragover)="onTrashDragOver($event)"
+  (dragleave)="onTrashDragLeave()"
+  (drop)="onTrashDrop($event)"
+>
+  <div class="trash-circle">✕</div>
+  <div class="trash-label">Drop here to remove</div>
+</div>
+
+<div
+  class="modal-backdrop"
+  *ngIf="isFolderDeleteConfirmOpen"
+  (click)="closeFolderDeleteConfirm()"
+>
+  <div class="modal-window confirm-modal-window" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Delete Folder</h3>
+      <button type="button" class="modal-close" (click)="closeFolderDeleteConfirm()">✕</button>
+    </div>
+
+    <p class="modal-subtitle">
+      The folder
+      <strong>"{{ folderPendingDeletion?.name }}"</strong>
+      is not empty.
+    </p>
+
+    <p class="confirm-warning-text">
+      Do you really want to delete it and remove its contents?
+    </p>
+
+    <div class="confirm-actions">
+      <button type="button" class="modal-secondary-button" (click)="closeFolderDeleteConfirm()">
+        Cancel
+      </button>
+
+      <button type="button" class="modal-danger-button" (click)="confirmDeleteNonEmptyFolder()">
+        Delete Folder
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" *ngIf="isLaunchModalOpen" (click)="closeLaunchModal()">
+  <div class="modal-window" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Application Launch</h3>
+      <button type="button" class="modal-close" (click)="closeLaunchModal()">✕</button>
+    </div>
+
+    <p class="modal-subtitle">{{ launchMessage }}</p>
+
+    <div class="modal-actions">
+      <button type="button" class="modal-primary-button" (click)="closeLaunchModal()">OK</button>
+    </div>
+  </div>
+</div>

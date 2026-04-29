@@ -30,7 +30,7 @@ export class GroupsPageComponent implements OnInit {
     adminPassword: ''
   };
 
-  selectedGroupId = '';
+  selectedGroup: GroupSummaryResponse | null = null;
   accessCode = '';
   accessErrorMessage = '';
 
@@ -58,6 +58,11 @@ export class GroupsPageComponent implements OnInit {
   createGroup(): void {
     this.errorMessage = '';
 
+    if (!this.isCreateGroupFormValid()) {
+      this.errorMessage = 'Please fill in all required fields.';
+      return;
+    }
+
     this.groupsService.createGroup(this.createRequest).subscribe({
       next: () => {
         this.createRequest = {
@@ -75,14 +80,14 @@ export class GroupsPageComponent implements OnInit {
     });
   }
 
-  selectGroupForEntry(groupId: string): void {
-    this.selectedGroupId = groupId;
+  openEnterGroup(group: GroupSummaryResponse): void {
+    this.selectedGroup = group;
     this.accessCode = '';
     this.accessErrorMessage = '';
   }
 
-  enterGroup(): void {
-    if (!this.selectedGroupId) {
+  continueToGroupLogin(): void {
+    if (!this.selectedGroup?.id) {
       this.accessErrorMessage = 'No group selected.';
       return;
     }
@@ -91,11 +96,11 @@ export class GroupsPageComponent implements OnInit {
       accessCode: this.accessCode
     };
 
-    this.groupsService.validateAccessCode(this.selectedGroupId, request).subscribe({
+    this.groupsService.validateAccessCode(this.selectedGroup.id, request).subscribe({
       next: (response) => {
         if (response.valid) {
           this.accessErrorMessage = '';
-          this.router.navigate(['/groups', this.selectedGroupId, 'login']);
+          this.router.navigate(['/groups', this.selectedGroup!.id, 'login']);
         } else {
           this.accessErrorMessage = response.message ?? 'Invalid access code.';
         }
@@ -107,9 +112,20 @@ export class GroupsPageComponent implements OnInit {
     });
   }
 
-  cancelEntry(): void {
-    this.selectedGroupId = '';
+  cancelEnterGroup(): void {
+    this.selectedGroup = null;
     this.accessCode = '';
     this.accessErrorMessage = '';
+  }
+
+  trackById(_: number, item: { id?: string | null }): string {
+    return item.id ?? Math.random().toString();
+  }
+
+  isCreateGroupFormValid(): boolean {
+    return !!this.createRequest.groupName?.trim()
+      && !!this.createRequest.accessCode?.trim()
+      && !!this.createRequest.adminUserName?.trim()
+      && !!this.createRequest.adminPassword?.trim();
   }
 }

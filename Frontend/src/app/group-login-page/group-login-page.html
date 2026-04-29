@@ -1,47 +1,86 @@
-<div class="page">
-  <div class="page-header">
-    <h1>Group Login</h1>
-    <button (click)="goBack()">Back</button>
+<div class="group-login-page">
+  <div class="group-login-header">
+    <div>
+      <h1>Group Login</h1>
+      <p>Select a user account and continue to sign in.</p>
+    </div>
+
+    <button class="ghost-button" type="button" (click)="goBack()">Back</button>
   </div>
 
-  <section class="card">
-    <h2>Available Users</h2>
+  <section class="panel users-panel">
+    <div class="panel-header">
+      <h2>Available Users</h2>
+      <p>Choose the account you want to enter with.</p>
+    </div>
 
-    <div><strong>Group ID:</strong> {{ groupId }}</div>
-    <br />
+    <div class="selected-group-box">
+      <span class="selected-group-label">Group ID</span>
+      <span class="selected-group-name">{{ groupId }}</span>
+    </div>
 
-    <div *ngIf="loading">Loading...</div>
-    <div *ngIf="errorMessage">{{ errorMessage }}</div>
+    <div class="state-message" *ngIf="loading">
+      Loading users...
+    </div>
 
-    <ul *ngIf="!loading && users.length > 0" class="user-list">
-      <li *ngFor="let user of users" class="user-item">
-        <div>
-          <strong>{{ user.name }}</strong> — {{ user.role }}
+    <div class="state-message error" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </div>
+
+    <div class="users-list" *ngIf="!loading && users.length > 0">
+      <div class="user-row" *ngFor="let user of users; trackBy: trackById">
+        <div class="user-row-left">
+          <div class="user-icon">👤</div>
+          <div class="user-info">
+            <div class="user-name">{{ user.name }}</div>
+            <div class="user-role">{{ user.role }}</div>
+          </div>
         </div>
-        <button (click)="selectUser(user.id!)">Select</button>
-      </li>
-    </ul>
 
-    <div *ngIf="!loading && users.length === 0">
-      No users found.
+        <button class="secondary-button" type="button" (click)="selectUser(user)">
+          Select
+        </button>
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="!loading && users.length === 0">
+      No users found in this group.
     </div>
   </section>
 
-  <section class="card" *ngIf="selectedUserId">
-    <h2>User Login</h2>
-
-    <div><strong>Selected user ID:</strong> {{ selectedUserId }}</div>
-
-    <div class="form-grid">
-      <input [(ngModel)]="password" placeholder="Enter password" type="password" />
+  <section class="panel login-panel" *ngIf="selectedUser">
+    <div class="panel-header">
+      <h2>User Login</h2>
+      <p>Enter the password for the selected user.</p>
     </div>
 
-    <div *ngIf="loginErrorMessage" class="error-message">
+    <div class="selected-user-box">
+      <span class="selected-group-label">Selected user</span>
+      <span class="selected-group-name">
+        {{ selectedUser.name }} — {{ selectedUser.role }}
+      </span>
+    </div>
+
+    <input
+      class="app-input"
+      type="password"
+      placeholder="Password"
+      [value]="password"
+      (input)="password = $any($event.target).value"
+    />
+
+    <div class="state-message error" *ngIf="loginErrorMessage">
       {{ loginErrorMessage }}
     </div>
 
-    <div class="button-row">
-      <button (click)="login()">Login</button>
+    <div class="panel-actions">
+      <button class="primary-button" type="button" (click)="loginUser()">
+        Login
+      </button>
+
+      <button class="ghost-button" type="button" (click)="cancelUserSelection()">
+        Cancel
+      </button>
     </div>
   </section>
 </div>
