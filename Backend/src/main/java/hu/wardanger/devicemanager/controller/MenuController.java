@@ -1,197 +1,161 @@
 package hu.wardanger.devicemanager.controller;
 
-import hu.wardanger.devicemanager.models.request.AddApplicationRequest;
-import hu.wardanger.devicemanager.models.request.CreateSubMenuRequest;
-import hu.wardanger.devicemanager.models.response.LaunchResponse;
-import hu.wardanger.devicemanager.models.response.RootMenuResponse;
-import hu.wardanger.devicemanager.models.response.SubMenuResponse;
 import hu.wardanger.devicemanager.entity.Menu;
 import hu.wardanger.devicemanager.entity.MenuItem;
 import hu.wardanger.devicemanager.entity.UserAccount;
+import hu.wardanger.devicemanager.generated.api.MenusApi;
+import hu.wardanger.devicemanager.generated.model.AddApplicationRequest;
+import hu.wardanger.devicemanager.generated.model.CreateSubMenuRequest;
+import hu.wardanger.devicemanager.generated.model.LaunchResponse;
+import hu.wardanger.devicemanager.generated.model.RootMenuResponse;
+import hu.wardanger.devicemanager.generated.model.SubMenuResponse;
 import hu.wardanger.devicemanager.mapper.MenuMapper;
 import hu.wardanger.devicemanager.service.MenuManagementService;
-
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
-
-import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
+import org.openapitools.jackson.nullable.JsonNullable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Comparator;
 import java.util.List;
 
-@Tag(name = "Menus", description = "Endpoints for managing root menus, submenus and applications")
 @RestController
+@RequiredArgsConstructor
 @Data
-@AllArgsConstructor
-public class MenuController {
+public class MenuController implements MenusApi {
 
     private final MenuManagementService menuManagementService;
     private final MenuMapper menuMapper;
 
-    @Operation(
-            summary = "Get user's root menu",
-            description = "Returns the root menu of the selected user, including applications, submenus, wallpaper and theme."
-    )
-    @ApiResponse(responseCode = "200", description = "Root menu returned successfully")
-    @GetMapping("/api/users/{userId}/menu")
-    public RootMenuResponse getRootMenu(@PathVariable String userId) {
+    @Override
+    public ResponseEntity<RootMenuResponse> getRootMenu(String userId) {
         UserAccount user = menuManagementService.findUserWithRootMenuItems(userId);
         Menu rootMenu = user.getRootMenu();
 
-        List<MenuItem> sortedMenuItems = rootMenu.getMenuItems() == null
-                ? List.of()
-                : rootMenu.getMenuItems().stream()
-                .sorted(Comparator.comparingInt(item ->
-                        item.getPositionIndex() == null ? Integer.MAX_VALUE : item.getPositionIndex()))
-                .toList();
+        List<MenuItem> sortedMenuItems = getSortedMenuItems(rootMenu);
 
         List<Menu> subMenus = rootMenu.getChildMenus() == null
                 ? List.of()
                 : rootMenu.getChildMenus();
 
-        return new RootMenuResponse(
-                rootMenu.getName(),
-                user.getWallpaper().getName(),
-                user.getTheme().getName(),
-                menuMapper.toMenuItemResponseList(sortedMenuItems),
-                menuMapper.toSubMenuResponseList(subMenus)
+        RootMenuResponse response = new RootMenuResponse();
+        response.setMenuName(rootMenu.getName());
+        response.setWallpaperName(
+                JsonNullable.of(user.getWallpaper() == null ? null : user.getWallpaper().getName())
         );
+        response.setThemeName(
+                JsonNullable.of(user.getTheme() == null ? null : user.getTheme().getName())
+        );
+        response.setApplications(menuMapper.toMenuItemResponseList(sortedMenuItems));
+        response.setSubMenus(menuMapper.toSubMenuResponseList(subMenus));
+
+        return ResponseEntity.ok(response);
     }
 
-    @Operation(
-            summary = "Add application to root menu",
-            description = "Adds an application to the selected user's root menu."
-    )
-    @ApiResponse(responseCode = "201", description = "Application added successfully")
-    @PostMapping("/api/users/{userId}/menu/applications")
-    @ResponseStatus(HttpStatus.CREATED)
-    public void addApplicationToRootMenu(@PathVariable String userId,
-                                         @RequestBody AddApplicationRequest request) {
+    @Override
+    public ResponseEntity<Void> addApplicationToRootMenu(String userId, AddApplicationRequest request) {
         menuManagementService.addApplicationToRootMenu(userId, request.getApplicationId());
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .build();
     }
 
-    @Operation(
-            summary = "Remove application from root menu",
-            description = "Removes an application from the selected user's root menu."
-    )
-    @ApiResponse(responseCode = "204", description = "Application removed successfully")
-    @DeleteMapping("/api/users/{userId}/menu/applications/{menuItemId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void removeApplicationFromRootMenu(@PathVariable String userId,
-                                              @PathVariable String menuItemId) {
+    @Override
+    public ResponseEntity<Void> removeApplicationFromRootMenu(String userId, String menuItemId) {
         menuManagementService.removeApplicationFromRootMenu(userId, menuItemId);
+
+        return ResponseEntity.noContent().build();
     }
 
-    @Operation(
-            summary = "Launch application from root menu",
-            description = "Launches the selected application from the user's root menu."
-    )
-    @ApiResponse(responseCode = "200", description = "Application launched successfully")
-    @PostMapping("/api/users/{userId}/menu/applications/{menuItemId}/launch")
-    public LaunchResponse launchApplicationFromRootMenu(@PathVariable String userId,
-                                                        @PathVariable String menuItemId) {
+    @Override
+    public ResponseEntity<LaunchResponse> launchApplicationFromRootMenu(String userId, String menuItemId) {
         String launchMessage = menuManagementService.launchApplicationFromRootMenu(userId, menuItemId);
-        return new LaunchResponse(launchMessage);
+
+        LaunchResponse response = new LaunchResponse();
+        response.setMessage(launchMessage);
+
+        return ResponseEntity.ok(response);
     }
 
-    @Operation(
-            summary = "List user's submenus",
-            description = "Returns all submenus of the selected user."
-    )
-    @ApiResponse(responseCode = "200", description = "Submenus returned successfully")
-    @GetMapping("/api/users/{userId}/submenus")
-    public List<SubMenuResponse> getSubMenus(@PathVariable String userId) {
+    @Override
+    public ResponseEntity<List<SubMenuResponse>> getSubMenus(String userId) {
         List<Menu> subMenus = menuManagementService.findSubMenus(userId);
-        return menuMapper.toSubMenuResponseList(subMenus);
+
+        List<SubMenuResponse> response = menuMapper.toSubMenuResponseList(subMenus);
+
+        return ResponseEntity.ok(response);
     }
 
-    @Operation(
-            summary = "Create submenu",
-            description = "Creates a new submenu under the selected user's root menu."
-    )
-    @ApiResponse(responseCode = "201", description = "Submenu created successfully")
-    @PostMapping("/api/users/{userId}/submenus")
-    @ResponseStatus(HttpStatus.CREATED)
-    public void createSubMenu(@PathVariable String userId,
-                              @RequestBody CreateSubMenuRequest request) {
+    @Override
+    public ResponseEntity<Void> createSubMenu(String userId, CreateSubMenuRequest request) {
         menuManagementService.createSubMenu(userId, request.getName());
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .build();
     }
 
-    @Operation(
-            summary = "Delete submenu",
-            description = "Deletes the selected submenu from the user's root menu."
-    )
-    @ApiResponse(responseCode = "204", description = "Submenu deleted successfully")
-    @DeleteMapping("/api/users/{userId}/submenus/{submenuId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteSubMenu(@PathVariable String userId,
-                              @PathVariable String submenuId) {
+    @Override
+    public ResponseEntity<Void> deleteSubMenu(String userId, String submenuId) {
         menuManagementService.deleteSubMenu(userId, submenuId);
+
+        return ResponseEntity.noContent().build();
     }
 
-    @Operation(
-            summary = "Get submenu details",
-            description = "Returns the selected submenu with its applications."
-    )
-    @ApiResponse(responseCode = "200", description = "Submenu returned successfully")
-    @GetMapping("/api/submenus/{submenuId}")
-    public RootMenuResponse getSubMenu(@PathVariable String submenuId) {
+    @Override
+    public ResponseEntity<RootMenuResponse> getSubMenu(String submenuId) {
         Menu submenu = menuManagementService.findSubMenuWithItems(submenuId);
 
-        List<MenuItem> items = submenu.getMenuItems() == null
-                ? List.of()
-                : submenu.getMenuItems().stream()
+        List<MenuItem> sortedMenuItems = getSortedMenuItems(submenu);
+
+        RootMenuResponse response = new RootMenuResponse();
+        response.setMenuName(submenu.getName());
+        response.setWallpaperName(JsonNullable.of(null));
+        response.setThemeName(JsonNullable.of(null));
+        response.setApplications(menuMapper.toMenuItemResponseList(sortedMenuItems));
+        response.setSubMenus(List.of());
+
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public ResponseEntity<Void> addApplicationToSubMenu(String submenuId, AddApplicationRequest request) {
+        menuManagementService.addApplicationToSubMenu(submenuId, request.getApplicationId());
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .build();
+    }
+
+    @Override
+    public ResponseEntity<Void> removeApplicationFromSubMenu(String submenuId, String menuItemId) {
+        menuManagementService.removeApplicationFromSubMenu(submenuId, menuItemId);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    public ResponseEntity<LaunchResponse> launchSubMenuApplication(String submenuId, String menuItemId) {
+        String launchMessage = menuManagementService.launchApplicationFromSubMenu(submenuId, menuItemId);
+
+        LaunchResponse response = new LaunchResponse();
+        response.setMessage(launchMessage);
+
+        return ResponseEntity.ok(response);
+    }
+
+    private List<MenuItem> getSortedMenuItems(Menu menu) {
+        if (menu.getMenuItems() == null) {
+            return List.of();
+        }
+
+        return menu.getMenuItems()
+                .stream()
                 .sorted(Comparator.comparingInt(item ->
                         item.getPositionIndex() == null ? Integer.MAX_VALUE : item.getPositionIndex()))
                 .toList();
-
-        return new RootMenuResponse(
-                submenu.getName(),
-                null,
-                null,
-                menuMapper.toMenuItemResponseList(items),
-                List.of()
-        );
-    }
-
-    @Operation(
-            summary = "Add application to submenu",
-            description = "Adds an application to the selected submenu."
-    )
-    @ApiResponse(responseCode = "201", description = "Application added successfully")
-    @PostMapping("/api/submenus/{submenuId}/applications")
-    @ResponseStatus(HttpStatus.CREATED)
-    public void addApplicationToSubMenu(@PathVariable String submenuId,
-                                        @RequestBody AddApplicationRequest request) {
-        menuManagementService.addApplicationToSubMenu(submenuId, request.getApplicationId());
-    }
-
-    @Operation(
-            summary = "Remove application from submenu",
-            description = "Removes an application from the selected submenu."
-    )
-    @ApiResponse(responseCode = "204", description = "Application removed successfully")
-    @DeleteMapping("/api/submenus/{submenuId}/applications/{menuItemId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void removeApplicationFromSubMenu(@PathVariable String submenuId,
-                                             @PathVariable String menuItemId) {
-        menuManagementService.removeApplicationFromSubMenu(submenuId, menuItemId);
-    }
-
-    @Operation(
-            summary = "Launch application from submenu",
-            description = "Launches the selected application from the submenu."
-    )
-    @ApiResponse(responseCode = "200", description = "Application launched successfully")
-    @PostMapping("/api/submenus/{submenuId}/applications/{menuItemId}/launch")
-    public LaunchResponse launchSubMenuApplication(@PathVariable String submenuId,
-                                                   @PathVariable String menuItemId) {
-        String launchMessage = menuManagementService.launchApplicationFromSubMenu(submenuId, menuItemId);
-        return new LaunchResponse(launchMessage);
     }
 }

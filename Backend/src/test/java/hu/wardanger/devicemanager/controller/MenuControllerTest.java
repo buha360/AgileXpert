@@ -1,15 +1,15 @@
 package hu.wardanger.devicemanager.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import hu.wardanger.devicemanager.models.request.AddApplicationRequest;
-import hu.wardanger.devicemanager.models.request.CreateSubMenuRequest;
-import hu.wardanger.devicemanager.models.response.MenuItemResponse;
-import hu.wardanger.devicemanager.models.response.SubMenuResponse;
 import hu.wardanger.devicemanager.entity.Menu;
 import hu.wardanger.devicemanager.entity.MenuItem;
 import hu.wardanger.devicemanager.entity.Theme;
 import hu.wardanger.devicemanager.entity.UserAccount;
 import hu.wardanger.devicemanager.entity.Wallpaper;
+import hu.wardanger.devicemanager.generated.model.AddApplicationRequest;
+import hu.wardanger.devicemanager.generated.model.CreateSubMenuRequest;
+import hu.wardanger.devicemanager.generated.model.MenuItemResponse;
+import hu.wardanger.devicemanager.generated.model.SubMenuResponse;
 import hu.wardanger.devicemanager.mapper.MenuMapper;
 import hu.wardanger.devicemanager.service.MenuManagementService;
 import org.junit.jupiter.api.DisplayName;
@@ -31,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(MenuController.class)
 class MenuControllerTest {
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
@@ -70,11 +71,17 @@ class MenuControllerTest {
         user.setWallpaper(wallpaper);
         user.setTheme(theme);
 
-        MenuItemResponse menuItemResponse = new MenuItemResponse("item-1", "OpenMap", 1);
+        MenuItemResponse menuItemResponse = new MenuItemResponse();
+        menuItemResponse.setId("item-1");
+        menuItemResponse.setName("OpenMap");
+        menuItemResponse.setPositionIndex(1);
 
-        when(menuManagementService.findUserWithRootMenuItems("user-1")).thenReturn(user);
-        when(menuMapper.toMenuItemResponseList(List.of(menuItem))).thenReturn(List.of(menuItemResponse));
-        when(menuMapper.toSubMenuResponseList(List.of())).thenReturn(List.of());
+        when(menuManagementService.findUserWithRootMenuItems("user-1"))
+                .thenReturn(user);
+        when(menuMapper.toMenuItemResponseList(List.of(menuItem)))
+                .thenReturn(List.of(menuItemResponse));
+        when(menuMapper.toSubMenuResponseList(List.of()))
+                .thenReturn(List.of());
 
         mockMvc.perform(get("/api/users/user-1/menu"))
                 .andExpect(status().isOk())
@@ -88,7 +95,8 @@ class MenuControllerTest {
     @Test
     @DisplayName("POST /api/users/{userId}/menu/applications - app hozzáadás a főmenühöz")
     void addApplicationToRootMenu_shouldReturnCreated() throws Exception {
-        AddApplicationRequest request = new AddApplicationRequest("app-openmap");
+        AddApplicationRequest request = new AddApplicationRequest();
+        request.setApplicationId("app-openmap");
 
         mockMvc.perform(post("/api/users/user-1/menu/applications")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -125,10 +133,14 @@ class MenuControllerTest {
         submenu.setId("submenu-1");
         submenu.setName("Játékok");
 
-        SubMenuResponse response = new SubMenuResponse("submenu-1", "Játékok");
+        SubMenuResponse response = new SubMenuResponse();
+        response.setId("submenu-1");
+        response.setName("Játékok");
 
-        when(menuManagementService.findSubMenus("user-1")).thenReturn(List.of(submenu));
-        when(menuMapper.toSubMenuResponseList(List.of(submenu))).thenReturn(List.of(response));
+        when(menuManagementService.findSubMenus("user-1"))
+                .thenReturn(List.of(submenu));
+        when(menuMapper.toSubMenuResponseList(List.of(submenu)))
+                .thenReturn(List.of(response));
 
         mockMvc.perform(get("/api/users/user-1/submenus"))
                 .andExpect(status().isOk())
@@ -139,7 +151,8 @@ class MenuControllerTest {
     @Test
     @DisplayName("POST /api/users/{userId}/submenus - almenü létrehozása")
     void createSubMenu_shouldReturnCreated() throws Exception {
-        CreateSubMenuRequest request = new CreateSubMenuRequest("Játékok");
+        CreateSubMenuRequest request = new CreateSubMenuRequest();
+        request.setName("Játékok");
 
         mockMvc.perform(post("/api/users/user-1/submenus")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -171,10 +184,15 @@ class MenuControllerTest {
         submenu.setName("Játékok");
         submenu.setMenuItems(List.of(menuItem));
 
-        MenuItemResponse menuItemResponse = new MenuItemResponse("item-1", "Minesweeper", 1);
+        MenuItemResponse menuItemResponse = new MenuItemResponse();
+        menuItemResponse.setId("item-1");
+        menuItemResponse.setName("Minesweeper");
+        menuItemResponse.setPositionIndex(1);
 
-        when(menuManagementService.findSubMenuWithItems("submenu-1")).thenReturn(submenu);
-        when(menuMapper.toMenuItemResponseList(List.of(menuItem))).thenReturn(List.of(menuItemResponse));
+        when(menuManagementService.findSubMenuWithItems("submenu-1"))
+                .thenReturn(submenu);
+        when(menuMapper.toMenuItemResponseList(List.of(menuItem)))
+                .thenReturn(List.of(menuItemResponse));
 
         mockMvc.perform(get("/api/submenus/submenu-1"))
                 .andExpect(status().isOk())
@@ -185,7 +203,8 @@ class MenuControllerTest {
     @Test
     @DisplayName("POST /api/submenus/{submenuId}/applications - app hozzáadás almenühöz")
     void addApplicationToSubMenu_shouldReturnCreated() throws Exception {
-        AddApplicationRequest request = new AddApplicationRequest("app-minesweeper");
+        AddApplicationRequest request = new AddApplicationRequest();
+        request.setApplicationId("app-minesweeper");
 
         mockMvc.perform(post("/api/submenus/submenu-1/applications")
                         .contentType(MediaType.APPLICATION_JSON)

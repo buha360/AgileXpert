@@ -4,6 +4,7 @@ import hu.wardanger.devicemanager.entity.UserAccount;
 import hu.wardanger.devicemanager.entity.UserGroup;
 import hu.wardanger.devicemanager.service.GroupService;
 import hu.wardanger.devicemanager.service.UserAccountService;
+import hu.wardanger.devicemanager.startup.SystemStartupValidator;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -16,13 +17,15 @@ public class SystemCliRunner implements CommandLineRunner {
     private final GroupService groupService;
     private final GroupSessionCli groupSessionCli;
     private final UserAccountService userAccountService;
+    private final SystemStartupValidator systemStartupValidator;
 
     public SystemCliRunner(GroupService groupService,
                            GroupSessionCli groupSessionCli,
-                           UserAccountService userAccountService) {
+                           UserAccountService userAccountService, SystemStartupValidator systemStartupValidator) {
         this.groupService = groupService;
         this.groupSessionCli = groupSessionCli;
         this.userAccountService = userAccountService;
+        this.systemStartupValidator = systemStartupValidator;
     }
 
     @Override
@@ -31,7 +34,15 @@ public class SystemCliRunner implements CommandLineRunner {
         boolean running = true;
 
         System.out.println("A szolgáltatás elindult!");
-        System.out.println("Adatbázis kapcsolat és Liquibase rendben.");
+
+        try {
+            systemStartupValidator.validateStartupState();
+            System.out.println("Adatbázis kapcsolat és Liquibase rendben.");
+        } catch (IllegalStateException e) {
+            System.out.println("Indítási ellenőrzés sikertelen: " + e.getMessage());
+            return;
+        }
+
         System.out.println();
 
         while (running) {

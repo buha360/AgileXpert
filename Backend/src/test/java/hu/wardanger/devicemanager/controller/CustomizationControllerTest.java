@@ -1,12 +1,12 @@
 package hu.wardanger.devicemanager.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import hu.wardanger.devicemanager.models.request.SelectThemeRequest;
-import hu.wardanger.devicemanager.models.request.SelectWallpaperRequest;
-import hu.wardanger.devicemanager.models.response.ThemeResponse;
-import hu.wardanger.devicemanager.models.response.WallpaperResponse;
 import hu.wardanger.devicemanager.entity.Theme;
 import hu.wardanger.devicemanager.entity.Wallpaper;
+import hu.wardanger.devicemanager.generated.model.SelectThemeRequest;
+import hu.wardanger.devicemanager.generated.model.SelectWallpaperRequest;
+import hu.wardanger.devicemanager.generated.model.ThemeResponse;
+import hu.wardanger.devicemanager.generated.model.WallpaperResponse;
 import hu.wardanger.devicemanager.mapper.CustomizationMapper;
 import hu.wardanger.devicemanager.service.CustomizationService;
 import org.junit.jupiter.api.DisplayName;
@@ -27,6 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(CustomizationController.class)
 class CustomizationControllerTest {
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
@@ -45,7 +46,9 @@ class CustomizationControllerTest {
         wallpaper.setId("wallpaper-1");
         wallpaper.setName("Mountain");
 
-        WallpaperResponse response = new WallpaperResponse("wallpaper-1", "Mountain");
+        WallpaperResponse response = new WallpaperResponse();
+        response.setId("wallpaper-1");
+        response.setName("Mountain");
 
         when(customizationService.findAllWallpapers()).thenReturn(List.of(wallpaper));
         when(customizationMapper.toWallpaperResponseList(List.of(wallpaper))).thenReturn(List.of(response));
@@ -63,7 +66,9 @@ class CustomizationControllerTest {
         theme.setId("theme-1");
         theme.setName("Dark");
 
-        ThemeResponse response = new ThemeResponse("theme-1", "Dark");
+        ThemeResponse response = new ThemeResponse();
+        response.setId("theme-1");
+        response.setName("Dark");
 
         when(customizationService.findAllThemes()).thenReturn(List.of(theme));
         when(customizationMapper.toThemeResponseList(List.of(theme))).thenReturn(List.of(response));
@@ -77,7 +82,8 @@ class CustomizationControllerTest {
     @Test
     @DisplayName("PUT /api/users/{userId}/wallpaper - háttérkép kiválasztása")
     void selectWallpaper_shouldReturnNoContent() throws Exception {
-        SelectWallpaperRequest request = new SelectWallpaperRequest("wallpaper-1");
+        SelectWallpaperRequest request = new SelectWallpaperRequest();
+        request.setWallpaperId("wallpaper-1");
 
         mockMvc.perform(put("/api/users/user-1/wallpaper")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -90,7 +96,8 @@ class CustomizationControllerTest {
     @Test
     @DisplayName("PUT /api/users/{userId}/theme - arculat kiválasztása")
     void selectTheme_shouldReturnNoContent() throws Exception {
-        SelectThemeRequest request = new SelectThemeRequest("theme-1");
+        SelectThemeRequest request = new SelectThemeRequest();
+        request.setThemeId("theme-1");
 
         mockMvc.perform(put("/api/users/user-1/theme")
                         .contentType(MediaType.APPLICATION_JSON)

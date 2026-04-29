@@ -1,78 +1,58 @@
 package hu.wardanger.devicemanager.controller;
 
-import hu.wardanger.devicemanager.models.request.SelectThemeRequest;
-import hu.wardanger.devicemanager.models.request.SelectWallpaperRequest;
-import hu.wardanger.devicemanager.models.response.ThemeResponse;
-import hu.wardanger.devicemanager.models.response.WallpaperResponse;
 import hu.wardanger.devicemanager.entity.Theme;
 import hu.wardanger.devicemanager.entity.Wallpaper;
+import hu.wardanger.devicemanager.generated.api.CustomizationApi;
+import hu.wardanger.devicemanager.generated.model.SelectThemeRequest;
+import hu.wardanger.devicemanager.generated.model.SelectWallpaperRequest;
+import hu.wardanger.devicemanager.generated.model.ThemeResponse;
+import hu.wardanger.devicemanager.generated.model.WallpaperResponse;
 import hu.wardanger.devicemanager.mapper.CustomizationMapper;
 import hu.wardanger.devicemanager.service.CustomizationService;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
-
-import lombok.AllArgsConstructor;
 import lombok.Data;
-
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@Tag(name = "Customization", description = "Endpoints for wallpapers and themes")
 @RestController
+@RequiredArgsConstructor
 @Data
-@AllArgsConstructor
-public class CustomizationController {
+public class CustomizationController implements CustomizationApi {
 
     private final CustomizationService customizationService;
     private final CustomizationMapper customizationMapper;
 
-    @Operation(
-            summary = "List all wallpapers",
-            description = "Returns all available wallpapers."
-    )
-    @ApiResponse(responseCode = "200", description = "Wallpapers returned successfully")
-    @GetMapping("/api/customization/wallpapers")
-    public List<WallpaperResponse> getAllWallpapers() {
+    @Override
+    public ResponseEntity<List<WallpaperResponse>> getAllWallpapers() {
         List<Wallpaper> wallpapers = customizationService.findAllWallpapers();
-        return customizationMapper.toWallpaperResponseList(wallpapers);
+
+        List<WallpaperResponse> response = customizationMapper.toWallpaperResponseList(wallpapers);
+
+        return ResponseEntity.ok(response);
     }
 
-    @Operation(
-            summary = "List all themes",
-            description = "Returns all available themes."
-    )
-    @ApiResponse(responseCode = "200", description = "Themes returned successfully")
-    @GetMapping("/api/customization/themes")
-    public List<ThemeResponse> getAllThemes() {
+    @Override
+    public ResponseEntity<List<ThemeResponse>> getAllThemes() {
         List<Theme> themes = customizationService.findAllThemes();
-        return customizationMapper.toThemeResponseList(themes);
+
+        List<ThemeResponse> response = customizationMapper.toThemeResponseList(themes);
+
+        return ResponseEntity.ok(response);
     }
 
-    @Operation(
-            summary = "Select wallpaper for user",
-            description = "Sets the selected wallpaper for the given user."
-    )
-    @ApiResponse(responseCode = "204", description = "Wallpaper updated successfully")
-    @PutMapping("/api/users/{userId}/wallpaper")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void selectWallpaper(@PathVariable String userId,
-                                @RequestBody SelectWallpaperRequest request) {
+    @Override
+    public ResponseEntity<Void> selectWallpaper(String userId, SelectWallpaperRequest request) {
         customizationService.setWallpaperForUser(userId, request.getWallpaperId());
+
+        return ResponseEntity.noContent().build();
     }
 
-    @Operation(
-            summary = "Select theme for user",
-            description = "Sets the selected theme for the given user."
-    )
-    @ApiResponse(responseCode = "204", description = "Theme updated successfully")
-    @PutMapping("/api/users/{userId}/theme")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void selectTheme(@PathVariable String userId,
-                            @RequestBody SelectThemeRequest request) {
+    @Override
+    public ResponseEntity<Void> selectTheme(String userId, SelectThemeRequest request) {
         customizationService.setThemeForUser(userId, request.getThemeId());
+
+        return ResponseEntity.noContent().build();
     }
 }
